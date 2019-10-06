@@ -72,6 +72,64 @@ func parse_arp(packet gopacket.Packet) {
 	}
 }
 
+/* helper for getting src and dst mac addresses of packet */
+func get_macs(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
+	var link_src, link_dst gopacket.Endpoint
+
+	if link := packet.LinkLayer(); link != nil {
+		/* extract MAC addresses */
+		link_src, link_dst = link.LinkFlow().Endpoints()
+	}
+
+	return link_src, link_dst
+}
+
+/* helper for getting src and dsc ip addresses of packet */
+func get_ips(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
+	var net_src, net_dst gopacket.Endpoint
+
+	if net := packet.NetworkLayer(); net != nil {
+		/* extract IP addresses */
+		net_src, net_dst = net.NetworkFlow().Endpoints()
+	}
+
+	return net_src, net_dst
+}
+
+/* parse neighbor discovery packets */
+func parse_ndisc(packet gopacket.Packet) {
+	solLayer := packet.Layer(layers.LayerTypeICMPv6NeighborSolicitation)
+	if solLayer != nil {
+		/* neighbor solicitation, get src mac and src ip */
+		link_src, _ := get_macs(packet)
+		net_src, _ := get_macs(packet)
+
+		/* create table entries if necessary */
+		if macs[link_src] == nil {
+			macs[link_src] = make(map[gopacket.Endpoint]int)
+		}
+
+		/* increase packet counter */
+		macs[link_src][net_src] += 1
+	}
+
+	advLayer := packet.Layer(layers.LayerTypeICMPv6NeighborAdvertisement)
+	if advLayer != nil {
+		/* neighbor advertisement, get src mac and target ip */
+		adv, _ := advLayer.(*layers.ICMPv6NeighborAdvertisement)
+		target_ip := layers.NewIPEndpoint(adv.TargetAddress)
+		link_src, _ := get_macs(packet)
+
+		/* create table entries if necessary */
+		if macs[link_src] == nil {
+			macs[link_src] = make(map[gopacket.Endpoint]int)
+		}
+
+		/* increase packet counter */
+		macs[link_src][target_ip] += 1
+	}
+}
+
 /* print device table periodically */
 func print_devices() {
 	for {
@@ -105,6 +163,7 @@ func listen() {
 		/* parse packet */
 		parse_macs_and_ips(packet)
 		parse_arp(packet)
+		parse_ndisc(packet)
 	}
 }
 
