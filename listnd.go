@@ -64,13 +64,8 @@ func parse_arp(packet gopacket.Packet) {
 		link_src := layers.NewMACEndpoint(arp.SourceHwAddress)
 		net_src := layers.NewIPEndpoint(arp.SourceProtAddress)
 
-		/* create table entries if necessary */
-		if macs[link_src] == nil {
-			macs[link_src] = make(map[gopacket.Endpoint]int)
-		}
-
-		/* increase packet counter */
-		macs[link_src][net_src] += 1
+		/* add to table */
+		add_table_entry(link_src, net_src)
 	}
 }
 
@@ -98,6 +93,18 @@ func get_ips(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
 	return net_src, net_dst
 }
 
+/* helper for adding a table entry */
+func add_table_entry(link_addr, net_addr gopacket.Endpoint) {
+	/* create table entries if necessary */
+	if macs[link_addr] == nil {
+		macs[link_addr] = make(map[gopacket.Endpoint]int)
+	}
+	/* init net address counter */
+	if macs[link_addr][net_addr] == 0 {
+		macs[link_addr][net_addr] = 1
+	}
+}
+
 /* parse neighbor discovery protocol packets */
 func parse_ndp(packet gopacket.Packet) {
 	nsolLayer := packet.Layer(layers.LayerTypeICMPv6NeighborSolicitation)
@@ -107,13 +114,8 @@ func parse_ndp(packet gopacket.Packet) {
 		link_src, _ := get_macs(packet)
 		net_src, _ := get_ips(packet)
 
-		/* create table entries if necessary */
-		if macs[link_src] == nil {
-			macs[link_src] = make(map[gopacket.Endpoint]int)
-		}
-
-		/* increase packet counter */
-		macs[link_src][net_src] += 1
+		/* add to table */
+		add_table_entry(link_src, net_src)
 
 		return
 	}
@@ -126,13 +128,8 @@ func parse_ndp(packet gopacket.Packet) {
 		target_ip := layers.NewIPEndpoint(adv.TargetAddress)
 		link_src, _ := get_macs(packet)
 
-		/* create table entries if necessary */
-		if macs[link_src] == nil {
-			macs[link_src] = make(map[gopacket.Endpoint]int)
-		}
-
-		/* increase packet counter */
-		macs[link_src][target_ip] += 1
+		/* add to table */
+		add_table_entry(link_src, target_ip)
 
 		return
 	}
@@ -144,13 +141,8 @@ func parse_ndp(packet gopacket.Packet) {
 		link_src, _ := get_macs(packet)
 		net_src, _ := get_ips(packet)
 
-		/* create table entries if necessary */
-		if macs[link_src] == nil {
-			macs[link_src] = make(map[gopacket.Endpoint]int)
-		}
-
-		/* increase packet counter */
-		macs[link_src][net_src] += 1
+		/* add to table */
+		add_table_entry(link_src, net_src)
 
 		return
 	}
@@ -162,13 +154,8 @@ func parse_ndp(packet gopacket.Packet) {
 		link_src, _ := get_macs(packet)
 		net_src, _ := get_ips(packet)
 
-		/* create table entries if necessary */
-		if macs[link_src] == nil {
-			macs[link_src] = make(map[gopacket.Endpoint]int)
-		}
-
-		/* increase packet counter */
-		macs[link_src][net_src] += 1
+		/* add to table */
+		add_table_entry(link_src, net_src)
 
 		return
 	}
