@@ -181,6 +181,10 @@ func parse_ndp(packet gopacket.Packet) {
 		/* add to table */
 		add_table_entry(link_src, net_src)
 
+		/* mark device as a router */
+		devices[link_src].router = true
+		// TODO: store prefixes?
+
 		return
 	}
 }
@@ -189,11 +193,16 @@ func parse_ndp(packet gopacket.Packet) {
 func print_devices() {
 	header := "========================= Devices ========================="
 	mac_fmt := "MAC: %s\n"
+	router_fmt := "    Router: %t\n"
 	ip_fmt := "    IP: %-40s (%d pkts)\n"
 	for {
 		fmt.Println(header)
 		for mac, device := range devices {
 			fmt.Printf(mac_fmt, mac)
+			if device.router {
+				fmt.Printf(router_fmt, device.router)
+				// TODO: print prefixes?
+			}
 			for ip, info := range device.ips {
 				fmt.Printf(ip_fmt, ip, info.packets)
 			}
