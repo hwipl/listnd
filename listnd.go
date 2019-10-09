@@ -8,6 +8,7 @@ import (
 	"github.com/google/gopacket/layers"
 	"log"
 	"time"
+	"net"
 )
 
 /* struct for ip addresses of devices on the network */
@@ -20,6 +21,7 @@ type ip_info struct {
 type device_info struct {
 	mac gopacket.Endpoint
 	router bool
+	prefixes []layers.ICMPv6Option
 	packets int
 	ips map[gopacket.Endpoint]*ip_info
 }
@@ -183,9 +185,31 @@ func parse_ndp(packet gopacket.Packet) {
 
 		/* mark device as a router */
 		devices[link_src].router = true
-		// TODO: store prefixes?
 
+		/* flush prefixes and refill with advertised ones */
+		adv, _ := radvLayer.(*layers.ICMPv6RouterAdvertisement)
+		devices[link_src].prefixes = nil
+		for i := range adv.Options {
+			if adv.Options[i].Type == layers.ICMPv6OptPrefixInfo {
+				devices[link_src].prefixes = append(
+					devices[link_src].prefixes,
+					adv.Options[i])
+			}
+		}
 		return
+	}
+}
+
+/* print router information in device table */
+func print_router(device *device_info) {
+	router_header := "    Router:\n"
+	prefix_fmt := "        Prefix: %v/%v\n"
+
+	fmt.Printf(router_header)
+	for _, prefix := range device.prefixes {
+		p_len := uint8(prefix.Data[0])
+		p := net.IP(prefix.Data[14:])
+		fmt.Printf(prefix_fmt, p, p_len)
 	}
 }
 
@@ -193,17 +217,19 @@ func parse_ndp(packet gopacket.Packet) {
 func print_devices() {
 	header := "========================= Devices ========================="
 	mac_fmt := "MAC: %s\n"
-	router_fmt := "    Router: %t\n"
 	ip_fmt := "    IP: %-40s (%d pkts)\n"
 	for {
+		/* start with header */
 		fmt.Println(header)
 		for mac, device := range devices {
+			/* print MAC address */
 			fmt.Printf(mac_fmt, mac)
 			if device.router {
-				fmt.Printf(router_fmt, device.router)
-				// TODO: print prefixes?
+				/* print router info */
+				print_router(device)
 			}
 			for ip, info := range device.ips {
+				/* print IP address info */
 				fmt.Printf(ip_fmt, ip, info.packets)
 			}
 			fmt.Println()
