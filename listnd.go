@@ -163,12 +163,15 @@ func parse_ndp(packet gopacket.Packet) {
 
 /* print device table periodically */
 func print_devices() {
+	header := "========================= Devices ========================="
+	mac_fmt := "MAC: %s\n"
+	ip_fmt := "    IP: %-40s (%d pkts)\n"
 	for {
-		fmt.Println("================ Devices ================")
+		fmt.Println(header)
 		for mac, ips := range macs {
-			fmt.Println("MAC:", mac)
+			fmt.Printf(mac_fmt, mac)
 			for ip, count := range ips {
-				fmt.Println("	IP: ", ip, " (", count, "pkts)")
+				fmt.Printf(ip_fmt, ip, count)
 			}
 			fmt.Println()
 		}
