@@ -21,13 +21,6 @@ var (
 	macs = make(map[gopacket.Endpoint]map[gopacket.Endpoint]int)
 )
 
-func print_layers(packet gopacket.Packet) {
-	fmt.Println("All packet layers:")
-	for _, layer := range packet.Layers() {
-		fmt.Println("- ", layer.LayerType())
-	}
-}
-
 /* parse MAC and IP addresses in packet */
 // TODO: change this to macs only?
 func parse_macs_and_ips(packet gopacket.Packet) {
@@ -152,7 +145,7 @@ func parse_ndp(packet gopacket.Packet) {
 
 	radvLayer := packet.Layer(layers.LayerTypeICMPv6RouterAdvertisement)
 	if radvLayer != nil {
-		/* router solicitation, get src mac and src ip */
+		/* router advertisement, get src mac and src ip */
 		link_src, _ := get_macs(packet)
 		net_src, _ := get_ips(packet)
 
