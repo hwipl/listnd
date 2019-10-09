@@ -26,15 +26,17 @@ type device_info struct {
 
 /* variable definitions */
 var (
-	device		string = "eth0"
-	snapshot_len	int32  = 1024
-	promiscuous	bool = true
-	err		error
-	timeout		time.Duration = 1 * time.Second
-	handle		*pcap.Handle
 	/* network device map and debugging mode */
 	devices = make(map[gopacket.Endpoint]*device_info)
 	debug_mode	bool = false
+
+	/* pcap settings */
+	pcap_promisc	bool = true
+	pcap_device	string = "eth0"
+	pcap_snaplen	int32  = 1024
+	pcap_timeout	time.Duration = 1 * time.Second
+	pcap_handle	*pcap.Handle
+	pcap_err	error
 )
 
 /* debug output */
@@ -204,17 +206,19 @@ func print_devices() {
 /* listen on network interface and parse packets */
 func listen() {
 	/* open device */
-	handle, err = pcap.OpenLive(device, snapshot_len, promiscuous, timeout)
-	if err != nil {
-		log.Fatal(err)
+	pcap_handle, pcap_err = pcap.OpenLive(pcap_device, pcap_snaplen,
+					      pcap_promisc, pcap_timeout)
+	if pcap_err != nil {
+		log.Fatal(pcap_err)
 	}
-	defer handle.Close()
+	defer pcap_handle.Close()
 
 	/* print device table periodically */
 	go print_devices()
 
 	/* Use the handle as a packet source to process all packets */
-	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+	packetSource := gopacket.NewPacketSource(pcap_handle,
+						 pcap_handle.LinkType())
 	for packet := range packetSource.Packets() {
 		/* parse packet */
 		parse_arp(packet)
@@ -227,17 +231,19 @@ func listen() {
 func parse_command_line() {
 	/* define command line arguments */
 	// TODO: add other settings as command line arguments?
-	flag.StringVar(&device, "i", device, "the interface to listen on")
-	flag.BoolVar(&promiscuous, "promisc", promiscuous, "promiscuous mode")
+	flag.StringVar(&pcap_device, "i", pcap_device,
+		       "the interface to listen on")
+	flag.BoolVar(&pcap_promisc, "promisc", pcap_promisc,
+		     "promiscuous mode")
 	flag.BoolVar(&debug_mode, "debug", debug_mode, "debugging mode")
 
 	/* parse and overwrite default values of settings */
 	flag.Parse()
 
 	/* output settings */
-	debug(fmt.Sprintf("Device: %s", device))
-	debug(fmt.Sprintf("Promiscuous: %t", promiscuous))
-	debug(fmt.Sprintf("Debugging: %t", debug_mode))
+	debug(fmt.Sprintf("Pcap Listen Device: %s", pcap_device))
+	debug(fmt.Sprintf("Pcap Promiscuous: %t", pcap_promisc))
+	debug(fmt.Sprintf("Debugging Output: %t", debug_mode))
 }
 
 /* main function */
