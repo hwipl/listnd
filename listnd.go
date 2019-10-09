@@ -10,6 +10,21 @@ import (
 	"time"
 )
 
+/* struct for ip addresses of devices on the network */
+type ip_info struct {
+	ip gopacket.Endpoint
+	packets int
+}
+
+/* struct for devices found on the network */
+type device_info struct {
+	mac gopacket.Endpoint
+	router bool
+	packets int
+	ips map[gopacket.Endpoint]*ip_info
+}
+
+/* variable definitions */
 var (
 	device		string = "eth0"
 	snapshot_len	int32  = 1024
@@ -17,8 +32,8 @@ var (
 	err		error
 	timeout		time.Duration = 1 * time.Second
 	handle		*pcap.Handle
-	// TODO: make a struct for network device/host infos and use it?
-	macs = make(map[gopacket.Endpoint]map[gopacket.Endpoint]int)
+	/* network device map and debugging mode */
+	devices = make(map[gopacket.Endpoint]*device_info)
 	debug_mode	bool = false
 )
 
@@ -40,13 +55,13 @@ func parse_macs_and_ips(packet gopacket.Packet) {
 			net_src, net_dst := net.NetworkFlow().Endpoints()
 
 			/* increase packet counters */
-			if macs[link_src] != nil &&
-			   macs[link_src][net_src] != 0 {
-				macs[link_src][net_src] += 1
+			if devices[link_src] != nil &&
+			   devices[link_src].ips[net_src] != nil {
+				   devices[link_src].ips[net_src].packets += 1
 			}
-			if macs[link_dst] != nil &&
-			   macs[link_dst][net_dst] != 0 {
-				macs[link_dst][net_dst] += 1
+			if devices[link_dst] != nil &&
+			   devices[link_dst].ips[net_dst] != nil {
+				   devices[link_dst].ips[net_dst].packets += 1
 			}
 		}
 	}
@@ -96,12 +111,19 @@ func get_ips(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
 /* helper for adding a table entry */
 func add_table_entry(link_addr, net_addr gopacket.Endpoint) {
 	/* create table entries if necessary */
-	if macs[link_addr] == nil {
-		macs[link_addr] = make(map[gopacket.Endpoint]int)
+	if devices[link_addr] == nil {
+		debug("Adding new entry")
+		device := device_info{}
+		device.mac = link_addr
+		device.ips = make(map[gopacket.Endpoint]*ip_info)
+		devices[link_addr] = &device
 	}
 	/* init net address counter */
-	if macs[link_addr][net_addr] == 0 {
-		macs[link_addr][net_addr] = 1
+	if devices[link_addr].ips[net_addr] == nil {
+		debug("Adding new ip to an entry")
+		ip := ip_info{}
+		ip.ip = net_addr
+		devices[link_addr].ips[net_addr] = &ip
 	}
 }
 
@@ -168,10 +190,10 @@ func print_devices() {
 	ip_fmt := "    IP: %-40s (%d pkts)\n"
 	for {
 		fmt.Println(header)
-		for mac, ips := range macs {
+		for mac, device := range devices {
 			fmt.Printf(mac_fmt, mac)
-			for ip, count := range ips {
-				fmt.Printf(ip_fmt, ip, count)
+			for ip, info := range device.ips {
+				fmt.Printf(ip_fmt, ip, info.packets)
 			}
 			fmt.Println()
 		}
