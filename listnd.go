@@ -19,7 +19,15 @@ var (
 	handle		*pcap.Handle
 	// TODO: make a struct for network device/host infos and use it?
 	macs = make(map[gopacket.Endpoint]map[gopacket.Endpoint]int)
+	debug_mode	bool = false
 )
+
+/* debug output */
+func debug(text string) {
+	if debug_mode {
+		fmt.Println(text)
+	}
+}
 
 /* parse MAC and IP addresses in packet */
 // TODO: change this to macs only?
@@ -48,6 +56,7 @@ func parse_macs_and_ips(packet gopacket.Packet) {
 func parse_arp(packet gopacket.Packet) {
 	arpLayer := packet.Layer(layers.LayerTypeARP)
 	if arpLayer != nil {
+		debug("ARP Request or Reply")
 		arp, _ := arpLayer.(*layers.ARP)
 		// TODO: use other info like arp.Operation, arp.DstHwAddress,
 		// or arp.DstProtAddress?
@@ -93,6 +102,7 @@ func get_ips(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
 func parse_ndp(packet gopacket.Packet) {
 	nsolLayer := packet.Layer(layers.LayerTypeICMPv6NeighborSolicitation)
 	if nsolLayer != nil {
+		debug("Neighbor Solicitation")
 		/* neighbor solicitation, get src mac and src ip */
 		link_src, _ := get_macs(packet)
 		net_src, _ := get_ips(packet)
@@ -110,6 +120,7 @@ func parse_ndp(packet gopacket.Packet) {
 
 	nadvLayer := packet.Layer(layers.LayerTypeICMPv6NeighborAdvertisement)
 	if nadvLayer != nil {
+		debug("Neighbor Advertisement")
 		/* neighbor advertisement, get src mac and target ip */
 		adv, _ := nadvLayer.(*layers.ICMPv6NeighborAdvertisement)
 		target_ip := layers.NewIPEndpoint(adv.TargetAddress)
@@ -128,6 +139,7 @@ func parse_ndp(packet gopacket.Packet) {
 
 	rsolLayer := packet.Layer(layers.LayerTypeICMPv6RouterSolicitation)
 	if rsolLayer != nil {
+		debug("Router Solicitation")
 		/* router solicitation, get src mac and src ip */
 		link_src, _ := get_macs(packet)
 		net_src, _ := get_ips(packet)
@@ -145,6 +157,7 @@ func parse_ndp(packet gopacket.Packet) {
 
 	radvLayer := packet.Layer(layers.LayerTypeICMPv6RouterAdvertisement)
 	if radvLayer != nil {
+		debug("Router Advertisement")
 		/* router advertisement, get src mac and src ip */
 		link_src, _ := get_macs(packet)
 		net_src, _ := get_ips(packet)
@@ -204,13 +217,15 @@ func parse_command_line() {
 	// TODO: add other settings as command line arguments?
 	flag.StringVar(&device, "i", device, "the interface to listen on")
 	flag.BoolVar(&promiscuous, "promisc", promiscuous, "promiscuous mode")
+	flag.BoolVar(&debug_mode, "debug", debug_mode, "debugging mode")
 
 	/* parse and overwrite default values of settings */
 	flag.Parse()
 
 	/* output settings */
-	fmt.Println("Device: ", device)
-	fmt.Println("Promiscuous: ", promiscuous)
+	debug(fmt.Sprintf("Device: %s", device))
+	debug(fmt.Sprintf("Promiscuous: %t", promiscuous))
+	debug(fmt.Sprintf("Debugging: %t", debug_mode))
 }
 
 /* main function */
