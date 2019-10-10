@@ -26,6 +26,12 @@ var (
 	pcap_err	error
 )
 
+/*
+ ********************
+ *** DEVICE TABLE ***
+ ********************
+ */
+
 /* struct for ip addresses of devices on the network */
 type ip_info struct {
 	ip		gopacket.Endpoint
@@ -74,12 +80,36 @@ func (d device_map) add_mac_ip(link_addr, net_addr gopacket.Endpoint) {
 	d[link_addr].add_ip(net_addr)
 }
 
-/* debug output */
-func debug(text string) {
-	if debug_mode {
-		fmt.Println(text)
+/*
+ ************************
+ *** PROTOCOL PARSING ***
+ ************************
+ */
+
+/* helper for getting src and dst mac addresses of packet */
+func get_macs(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
+	var link_src, link_dst gopacket.Endpoint
+
+	if link := packet.LinkLayer(); link != nil {
+		/* extract MAC addresses */
+		link_src, link_dst = link.LinkFlow().Endpoints()
 	}
+
+	return link_src, link_dst
 }
+
+/* helper for getting src and dst ip addresses of packet */
+func get_ips(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
+	var net_src, net_dst gopacket.Endpoint
+
+	if net := packet.NetworkLayer(); net != nil {
+		/* extract IP addresses */
+		net_src, net_dst = net.NetworkFlow().Endpoints()
+	}
+
+	return net_src, net_dst
+}
+
 
 /* parse MAC and IP addresses in packet */
 // TODO: change this to macs only?
@@ -117,30 +147,6 @@ func parse_arp(packet gopacket.Packet) {
 		/* add to table */
 		devices.add_mac_ip(link_src, net_src)
 	}
-}
-
-/* helper for getting src and dst mac addresses of packet */
-func get_macs(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
-	var link_src, link_dst gopacket.Endpoint
-
-	if link := packet.LinkLayer(); link != nil {
-		/* extract MAC addresses */
-		link_src, link_dst = link.LinkFlow().Endpoints()
-	}
-
-	return link_src, link_dst
-}
-
-/* helper for getting src and dst ip addresses of packet */
-func get_ips(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
-	var net_src, net_dst gopacket.Endpoint
-
-	if net := packet.NetworkLayer(); net != nil {
-		/* extract IP addresses */
-		net_src, net_dst = net.NetworkFlow().Endpoints()
-	}
-
-	return net_src, net_dst
 }
 
 /* parse neighbor discovery protocol packets */
@@ -229,6 +235,19 @@ func parse_dhcp(packet gopacket.Packet) {
 	}
 }
 
+/*
+ **********************
+ *** CONSOLE OUTPUT ***
+ **********************
+ */
+
+/* debug output */
+func debug(text string) {
+	if debug_mode {
+		fmt.Println(text)
+	}
+}
+
 /* print router information in device table */
 func print_router(device *device_info) {
 	router_header := "    Router:\n"
@@ -276,6 +295,12 @@ func print_devices() {
 		time.Sleep(5 * time.Second)
 	}
 }
+
+/*
+ ************
+ *** MAIN ***
+ ************
+ */
 
 /* listen on network interface and parse packets */
 func listen() {
