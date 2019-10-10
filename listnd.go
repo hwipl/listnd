@@ -11,6 +11,21 @@ import (
 	"net"
 )
 
+/* variable definitions */
+var (
+	/* network device map and debugging mode */
+	devices         = make(map[gopacket.Endpoint]*device_info)
+	debug_mode	bool = false
+
+	/* pcap settings */
+	pcap_promisc	bool = true
+	pcap_device	string = "eth0"
+	pcap_snaplen	int = 1024
+	pcap_timeout	int = 1
+	pcap_handle	*pcap.Handle
+	pcap_err	error
+)
+
 /* struct for ip addresses of devices on the network */
 type ip_info struct {
 	ip		gopacket.Endpoint
@@ -26,21 +41,6 @@ type device_info struct {
 	packets		int
 	ips		map[gopacket.Endpoint]*ip_info
 }
-
-/* variable definitions */
-var (
-	/* network device map and debugging mode */
-	devices		= make(map[gopacket.Endpoint]*device_info)
-	debug_mode	bool = false
-
-	/* pcap settings */
-	pcap_promisc	bool = true
-	pcap_device	string = "eth0"
-	pcap_snaplen	int = 1024
-	pcap_timeout	int = 1
-	pcap_handle	*pcap.Handle
-	pcap_err	error
-)
 
 /* debug output */
 func debug(text string) {
@@ -78,8 +78,6 @@ func parse_arp(packet gopacket.Packet) {
 	if arpLayer != nil {
 		debug("ARP Request or Reply")
 		arp, _ := arpLayer.(*layers.ARP)
-		// TODO: use other info like arp.Operation, arp.DstHwAddress,
-		// or arp.DstProtAddress?
 		/* get addresses */
 		link_src := layers.NewMACEndpoint(arp.SourceHwAddress)
 		net_src := layers.NewIPEndpoint(arp.SourceProtAddress)
