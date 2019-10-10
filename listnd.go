@@ -14,7 +14,7 @@ import (
 /* variable definitions */
 var (
 	/* network device map and debugging mode */
-	devices         = make(map[gopacket.Endpoint]*device_info)
+	devices		= make(device_map)
 	debug_mode	bool = false
 
 	/* pcap settings */
@@ -40,6 +40,38 @@ type device_info struct {
 	prefixes	[]layers.ICMPv6Option
 	packets		int
 	ips		map[gopacket.Endpoint]*ip_info
+}
+
+/* device table definition */
+type device_map map[gopacket.Endpoint]*device_info
+
+/* add an ip address to a device */
+func (d *device_info) add_ip(net_addr gopacket.Endpoint) {
+	/* init net address counter */
+	if d.ips[net_addr] == nil {
+		debug("Adding new ip to an entry")
+		ip := ip_info{}
+		ip.ip = net_addr
+		d.ips[net_addr] = &ip
+	}
+}
+
+/* add a device to the device table */
+func (d device_map) add(link_addr gopacket.Endpoint) {
+	/* create table entries if necessary */
+	if d[link_addr] == nil {
+		debug("Adding new entry")
+		device := device_info{}
+		device.mac = link_addr
+		device.ips = make(map[gopacket.Endpoint]*ip_info)
+		d[link_addr] = &device
+	}
+}
+
+/* add a device table entry with mac and ip address*/
+func (d device_map) add_mac_ip(link_addr, net_addr gopacket.Endpoint) {
+	d.add(link_addr)
+	d[link_addr].add_ip(net_addr)
 }
 
 /* debug output */
@@ -83,7 +115,7 @@ func parse_arp(packet gopacket.Packet) {
 		net_src := layers.NewIPEndpoint(arp.SourceProtAddress)
 
 		/* add to table */
-		add_table_entry(link_src, net_src)
+		devices.add_mac_ip(link_src, net_src)
 	}
 }
 
@@ -111,35 +143,6 @@ func get_ips(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
 	return net_src, net_dst
 }
 
-/* helper for adding a device to the device table */
-func devices_add(link_addr gopacket.Endpoint) {
-	/* create table entries if necessary */
-	if devices[link_addr] == nil {
-		debug("Adding new entry")
-		device := device_info{}
-		device.mac = link_addr
-		device.ips = make(map[gopacket.Endpoint]*ip_info)
-		devices[link_addr] = &device
-	}
-}
-
-/* helper for adding an ip address to a device */
-func device_add_ip(device *device_info, net_addr gopacket.Endpoint) {
-	/* init net address counter */
-	if device.ips[net_addr] == nil {
-		debug("Adding new ip to an entry")
-		ip := ip_info{}
-		ip.ip = net_addr
-		device.ips[net_addr] = &ip
-	}
-}
-
-/* helper for adding a table entry */
-func add_table_entry(link_addr, net_addr gopacket.Endpoint) {
-	devices_add(link_addr)
-	device_add_ip(devices[link_addr], net_addr)
-}
-
 /* parse neighbor discovery protocol packets */
 func parse_ndp(packet gopacket.Packet) {
 	nsolLayer := packet.Layer(layers.LayerTypeICMPv6NeighborSolicitation)
@@ -150,7 +153,7 @@ func parse_ndp(packet gopacket.Packet) {
 		net_src, _ := get_ips(packet)
 
 		/* add to table */
-		add_table_entry(link_src, net_src)
+		devices.add_mac_ip(link_src, net_src)
 
 		return
 	}
@@ -164,7 +167,7 @@ func parse_ndp(packet gopacket.Packet) {
 		link_src, _ := get_macs(packet)
 
 		/* add to table */
-		add_table_entry(link_src, target_ip)
+		devices.add_mac_ip(link_src, target_ip)
 
 		return
 	}
@@ -177,7 +180,7 @@ func parse_ndp(packet gopacket.Packet) {
 		net_src, _ := get_ips(packet)
 
 		/* add to table */
-		add_table_entry(link_src, net_src)
+		devices.add_mac_ip(link_src, net_src)
 
 		return
 	}
@@ -190,7 +193,7 @@ func parse_ndp(packet gopacket.Packet) {
 		net_src, _ := get_ips(packet)
 
 		/* add to table */
-		add_table_entry(link_src, net_src)
+		devices.add_mac_ip(link_src, net_src)
 
 		/* mark device as a router */
 		devices[link_src].router = true
@@ -218,7 +221,7 @@ func parse_dhcp(packet gopacket.Packet) {
 		link_src, _ := get_macs(packet)
 
 		/* add device */
-		devices_add(link_src)
+		devices.add(link_src)
 		if dhcp.Operation == layers.DHCPOpReply {
 			/* mark this device as dhcp server */
 			devices[link_src].dhcp = true
