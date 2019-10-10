@@ -112,8 +112,8 @@ func get_ips(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
 	return net_src, net_dst
 }
 
-/* helper for adding a table entry */
-func add_table_entry(link_addr, net_addr gopacket.Endpoint) {
+/* helper for adding a device to the device table */
+func devices_add(link_addr gopacket.Endpoint) {
 	/* create table entries if necessary */
 	if devices[link_addr] == nil {
 		debug("Adding new entry")
@@ -122,13 +122,23 @@ func add_table_entry(link_addr, net_addr gopacket.Endpoint) {
 		device.ips = make(map[gopacket.Endpoint]*ip_info)
 		devices[link_addr] = &device
 	}
+}
+
+/* helper for adding an ip address to a device */
+func device_add_ip(device *device_info, net_addr gopacket.Endpoint) {
 	/* init net address counter */
-	if devices[link_addr].ips[net_addr] == nil {
+	if device.ips[net_addr] == nil {
 		debug("Adding new ip to an entry")
 		ip := ip_info{}
 		ip.ip = net_addr
-		devices[link_addr].ips[net_addr] = &ip
+		device.ips[net_addr] = &ip
 	}
+}
+
+/* helper for adding a table entry */
+func add_table_entry(link_addr, net_addr gopacket.Endpoint) {
+	devices_add(link_addr)
+	device_add_ip(devices[link_addr], net_addr)
 }
 
 /* parse neighbor discovery protocol packets */
