@@ -20,6 +20,7 @@ type ip_info struct {
 /* struct for devices found on the network */
 type device_info struct {
 	mac		gopacket.Endpoint
+	dhcp		bool
 	router		bool
 	prefixes	[]layers.ICMPv6Option
 	packets		int
@@ -210,6 +211,23 @@ func parse_ndp(packet gopacket.Packet) {
 	}
 }
 
+/* parse dhcp packets */
+func parse_dhcp(packet gopacket.Packet) {
+	dhcpLayer := packet.Layer(layers.LayerTypeDHCPv4)
+	if dhcpLayer != nil {
+		debug("DHCP Request or Reply")
+		dhcp, _ := dhcpLayer.(*layers.DHCPv4)
+		link_src, _ := get_macs(packet)
+
+		/* add device */
+		devices_add(link_src)
+		if dhcp.Operation == layers.DHCPOpReply {
+			/* mark this device as dhcp server */
+			devices[link_src].dhcp = true
+		}
+	}
+}
+
 /* print router information in device table */
 func print_router(device *device_info) {
 	router_header := "    Router:\n"
@@ -223,6 +241,12 @@ func print_router(device *device_info) {
 	}
 }
 
+/* print dhcp information in device table */
+func print_dhcp(device *device_info) {
+	dhcp_header := "    DHCP: server\n"
+	fmt.Printf(dhcp_header)
+}
+
 /* print device table periodically */
 func print_devices() {
 	header := "========================= Devices ========================="
@@ -234,6 +258,10 @@ func print_devices() {
 		for mac, device := range devices {
 			/* print MAC address */
 			fmt.Printf(mac_fmt, mac)
+			if device.dhcp {
+				/* print dhcp info */
+				print_dhcp(device)
+			}
 			if device.router {
 				/* print router info */
 				print_router(device)
@@ -272,6 +300,7 @@ func listen() {
 		/* parse packet */
 		parse_arp(packet)
 		parse_ndp(packet)
+		parse_dhcp(packet)
 		parse_macs_and_ips(packet)
 	}
 }
