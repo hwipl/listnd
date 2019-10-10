@@ -13,17 +13,17 @@ import (
 
 /* struct for ip addresses of devices on the network */
 type ip_info struct {
-	ip gopacket.Endpoint
-	packets int
+	ip		gopacket.Endpoint
+	packets		int
 }
 
 /* struct for devices found on the network */
 type device_info struct {
-	mac gopacket.Endpoint
-	router bool
-	prefixes []layers.ICMPv6Option
-	packets int
-	ips map[gopacket.Endpoint]*ip_info
+	mac		gopacket.Endpoint
+	router		bool
+	prefixes	[]layers.ICMPv6Option
+	packets		int
+	ips		map[gopacket.Endpoint]*ip_info
 }
 
 /* variable definitions */
