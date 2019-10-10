@@ -29,14 +29,14 @@ type device_info struct {
 /* variable definitions */
 var (
 	/* network device map and debugging mode */
-	devices = make(map[gopacket.Endpoint]*device_info)
+	devices		= make(map[gopacket.Endpoint]*device_info)
 	debug_mode	bool = false
 
 	/* pcap settings */
 	pcap_promisc	bool = true
 	pcap_device	string = "eth0"
-	pcap_snaplen	int32  = 1024
-	pcap_timeout	time.Duration = 1 * time.Second
+	pcap_snaplen	int = 1024
+	pcap_timeout	int = 1
 	pcap_handle	*pcap.Handle
 	pcap_err	error
 )
@@ -240,6 +240,10 @@ func print_devices() {
 
 /* listen on network interface and parse packets */
 func listen() {
+	/* convert pcap parameters from command line arguments */
+	pcap_timeout := time.Duration(pcap_timeout) * time.Second
+	pcap_snaplen := int32(pcap_snaplen)
+
 	/* open device */
 	pcap_handle, pcap_err = pcap.OpenLive(pcap_device, pcap_snaplen,
 					      pcap_promisc, pcap_timeout)
@@ -265,11 +269,14 @@ func listen() {
 /* parse command line arguments */
 func parse_command_line() {
 	/* define command line arguments */
-	// TODO: add other settings as command line arguments?
 	flag.StringVar(&pcap_device, "i", pcap_device,
 		       "the interface to listen on")
-	flag.BoolVar(&pcap_promisc, "promisc", pcap_promisc,
-		     "promiscuous mode")
+	flag.BoolVar(&pcap_promisc, "pcap-promisc", pcap_promisc,
+		     "Set pcap promiscuous parameter")
+	flag.IntVar(&pcap_timeout, "pcap-timeout", pcap_timeout,
+		    "Set pcap timeout parameter in seconds")
+	flag.IntVar(&pcap_snaplen, "pcap-snaplen", pcap_snaplen,
+		    "Set pcap snapshot length parameter in bytes")
 	flag.BoolVar(&debug_mode, "debug", debug_mode, "debugging mode")
 
 	/* parse and overwrite default values of settings */
@@ -278,6 +285,8 @@ func parse_command_line() {
 	/* output settings */
 	debug(fmt.Sprintf("Pcap Listen Device: %s", pcap_device))
 	debug(fmt.Sprintf("Pcap Promiscuous: %t", pcap_promisc))
+	debug(fmt.Sprintf("Pcap Timeout: %d", pcap_timeout))
+	debug(fmt.Sprintf("Pcap Snaplen: %d", pcap_snaplen))
 	debug(fmt.Sprintf("Debugging Output: %t", debug_mode))
 }
 
