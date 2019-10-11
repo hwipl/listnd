@@ -53,6 +53,10 @@ type device_map map[gopacket.Endpoint]*device_info
 
 /* add an ip address to a device */
 func (d *device_info) add_ip(net_addr gopacket.Endpoint) {
+	/* make sure address is valid */
+	if !endpoint_is_valid_ip(net_addr) {
+		return
+	}
 	/* init net address counter */
 	if d.ips[net_addr] == nil {
 		debug("Adding new ip to an entry")
@@ -78,6 +82,19 @@ func (d device_map) add(link_addr gopacket.Endpoint) {
 func (d device_map) add_mac_ip(link_addr, net_addr gopacket.Endpoint) {
 	d.add(link_addr)
 	d[link_addr].add_ip(net_addr)
+}
+
+/* check if IP address in endpoint is valid */
+var addr_zero gopacket.Endpoint
+var addr_unspecv4 = layers.NewIPEndpoint(net.ParseIP("0.0.0.0"))
+var addr_unspecv6 = layers.NewIPEndpoint(net.ParseIP("::"))
+
+func endpoint_is_valid_ip(e gopacket.Endpoint) (bool) {
+	if e == addr_zero || e == addr_unspecv4 || e == addr_unspecv6 {
+		return false
+	}
+
+	return true
 }
 
 /*
