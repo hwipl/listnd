@@ -129,25 +129,19 @@ func get_ips(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
 
 
 /* parse MAC and IP addresses in packet */
-// TODO: change this to macs only?
 func parse_macs_and_ips(packet gopacket.Packet) {
-	if link := packet.LinkLayer(); link != nil {
-		/* extract MAC addresses */
-		link_src, link_dst := link.LinkFlow().Endpoints()
-		if net := packet.NetworkLayer(); net != nil {
-			/* extract IP addresses */
-			net_src, net_dst := net.NetworkFlow().Endpoints()
+	/* get addresses */
+	link_src, link_dst := get_macs(packet)
+	net_src, net_dst := get_ips(packet)
 
-			/* increase packet counters */
-			if devices[link_src] != nil &&
-			   devices[link_src].ips[net_src] != nil {
-				   devices[link_src].ips[net_src].packets += 1
-			}
-			if devices[link_dst] != nil &&
-			   devices[link_dst].ips[net_dst] != nil {
-				   devices[link_dst].ips[net_dst].packets += 1
-			}
-		}
+	/* increase packet counters */
+	if devices[link_src] != nil &&
+	   devices[link_src].ips[net_src] != nil {
+		   devices[link_src].ips[net_src].packets += 1
+	}
+	if devices[link_dst] != nil &&
+	   devices[link_dst].ips[net_dst] != nil {
+		   devices[link_dst].ips[net_dst].packets += 1
 	}
 }
 
