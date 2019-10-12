@@ -285,12 +285,17 @@ func print_dhcp(device *device_info) {
 
 /* print device table periodically */
 func print_devices() {
-	header := "========================= Devices ========================="
+	devices_fmt :=
+		"==============================" +
+		"==============================\n" +
+		"Devices: %d\n" +
+		"==============================" +
+		"==============================\n"
 	mac_fmt := "MAC: %s\n"
 	ip_fmt := "    IP: %-40s (%d pkts)\n"
 	for {
-		/* start with header */
-		fmt.Println(header)
+		/* start with devices header */
+		fmt.Printf(devices_fmt, len(devices))
 		for mac, device := range devices {
 			/* print MAC address */
 			fmt.Printf(mac_fmt, mac)
