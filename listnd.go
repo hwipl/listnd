@@ -127,6 +127,11 @@ func get_ips(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
 	return net_src, net_dst
 }
 
+/* parse the source MAC address and add it to device table */
+func parse_src_mac(packet gopacket.Packet) {
+	link_src, _ := get_macs(packet)
+	devices.add(link_src)
+}
 
 /* parse MAC and IP addresses in packet */
 func parse_macs_and_ips(packet gopacket.Packet) {
@@ -335,6 +340,7 @@ func listen() {
 						 pcap_handle.LinkType())
 	for packet := range packetSource.Packets() {
 		/* parse packet */
+		parse_src_mac(packet)
 		parse_arp(packet)
 		parse_ndp(packet)
 		parse_dhcp(packet)
