@@ -41,6 +41,7 @@ type ip_info struct {
 /* struct for devices found on the network */
 type device_info struct {
 	mac		gopacket.Endpoint
+	bridge		bool
 	dhcp		bool
 	router		bool
 	prefixes	[]layers.ICMPv6Option
@@ -251,6 +252,19 @@ func parse_dhcp(packet gopacket.Packet) {
 	}
 }
 
+/* parse stp packets */
+func parse_stp(packet gopacket.Packet) {
+	stpLayer := packet.Layer(layers.LayerTypeSTP)
+	if stpLayer != nil {
+		debug("STP packet")
+		link_src, _ := get_macs(packet)
+
+		/* add device and mark this device as a bridge */
+		devices.add(link_src)
+		devices[link_src].bridge = true
+	}
+}
+
 /*
  **********************
  *** CONSOLE OUTPUT ***
@@ -283,6 +297,12 @@ func print_dhcp(device *device_info) {
 	fmt.Printf(dhcp_header)
 }
 
+/* print bridge information in device table */
+func print_bridge(device *device_info) {
+	bridge_header := "    Bridge: true\n"
+	fmt.Printf(bridge_header)
+}
+
 /* print device table periodically */
 func print_devices() {
 	devices_fmt :=
@@ -299,6 +319,10 @@ func print_devices() {
 		for mac, device := range devices {
 			/* print MAC address */
 			fmt.Printf(mac_fmt, mac)
+			if device.bridge {
+				/* print bridge info */
+				print_bridge(device)
+			}
 			if device.dhcp {
 				/* print dhcp info */
 				print_dhcp(device)
@@ -349,6 +373,7 @@ func listen() {
 		parse_arp(packet)
 		parse_ndp(packet)
 		parse_dhcp(packet)
+		parse_stp(packet)
 		parse_macs_and_ips(packet)
 	}
 }
