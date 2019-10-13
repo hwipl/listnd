@@ -59,12 +59,27 @@ func (d *device_info) add_ip(net_addr gopacket.Endpoint) {
 	if !endpoint_is_valid_ip(net_addr) {
 		return
 	}
-	/* init net address counter */
+
+	/* add entry if it does not exist */
 	if d.ips[net_addr] == nil {
 		debug("Adding new ip to an entry")
 		ip := ip_info{}
 		ip.ip = net_addr
 		d.ips[net_addr] = &ip
+	}
+}
+
+/* remove an ip address from a device */
+func (d *device_info) del_ip(net_addr gopacket.Endpoint) {
+	/* make sure address is valid */
+	if !endpoint_is_valid_ip(net_addr) {
+		return
+	}
+
+	/* remove entry if it exists */
+	if d.ips[net_addr] != nil {
+		debug("Deleting ip from an entry")
+		delete(d.ips, net_addr)
 	}
 }
 
