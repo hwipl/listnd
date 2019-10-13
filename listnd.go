@@ -396,6 +396,7 @@ func parse_mld(packet gopacket.Packet) {
 
 /* parse dhcp packets */
 func parse_dhcp(packet gopacket.Packet) {
+	/* DHCP v4 */
 	dhcpLayer := packet.Layer(layers.LayerTypeDHCPv4)
 	if dhcpLayer != nil {
 		dhcp, _ := dhcpLayer.(*layers.DHCPv4)
@@ -410,6 +411,47 @@ func parse_dhcp(packet gopacket.Packet) {
 		if dhcp.Operation == layers.DHCPOpReply {
 			debug("DHCP Reply")
 			/* mark this device as dhcp server */
+			devices[link_src].dhcp = true
+		}
+	}
+
+	/* DHCP v6 */
+	dhcpv6Layer := packet.Layer(layers.LayerTypeDHCPv6)
+	if dhcpv6Layer != nil {
+		dhcp, _ := dhcpv6Layer.(*layers.DHCPv6)
+		link_src, _ := get_macs(packet)
+
+		/* parse message type to determine if server or client */
+		switch dhcp.MsgType {
+		case layers.DHCPv6MsgTypeSolicit:
+			debug("DHCPv6 Solicit")
+		case layers.DHCPv6MsgTypeAdverstise:
+			debug("DHCPv6 Advertise")
+		case layers.DHCPv6MsgTypeRequest:
+			debug("DHCPv6 Request")
+			devices[link_src].dhcp = true
+		case layers.DHCPv6MsgTypeConfirm:
+			debug("DHCPv6 Confirm")
+		case layers.DHCPv6MsgTypeRenew:
+			debug("DHCPv6 Renew")
+		case layers.DHCPv6MsgTypeRebind:
+			debug("DHCPv6 Rebind")
+		case layers.DHCPv6MsgTypeReply:
+			debug("DHCPv6 Reply")
+			devices[link_src].dhcp = true
+		case layers.DHCPv6MsgTypeRelease:
+			debug("DHCPv6 Release")
+		case layers.DHCPv6MsgTypeDecline:
+			debug("DHCPv6 Decline")
+		case layers.DHCPv6MsgTypeReconfigure:
+			debug("DHCPv6 Reconfigure")
+			devices[link_src].dhcp = true
+		case layers.DHCPv6MsgTypeInformationRequest:
+			debug("DHCPv6 Information Request")
+		case layers.DHCPv6MsgTypeRelayForward:
+			debug("DHCPv6 Relay Forward")
+		case layers.DHCPv6MsgTypeRelayReply:
+			debug("DHCPv6 Relay Reply")
 			devices[link_src].dhcp = true
 		}
 	}
