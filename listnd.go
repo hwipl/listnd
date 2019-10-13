@@ -41,6 +41,7 @@ type ip_info struct {
 /* struct for devices found on the network */
 type device_info struct {
 	mac		gopacket.Endpoint
+	powerline	bool
 	bridge		bool
 	dhcp		bool
 	router		bool
@@ -265,6 +266,22 @@ func parse_stp(packet gopacket.Packet) {
 	}
 }
 
+/* parse plc (power-line communication/homeplug) packets */
+func parse_plc(packet gopacket.Packet) {
+	ethLayer := packet.Layer(layers.LayerTypeEthernet)
+	if ethLayer != nil {
+		eth, _ := ethLayer.(*layers.Ethernet)
+		if eth.EthernetType == 0x88e1 || eth.EthernetType == 0x8912 {
+			debug("PLC packet")
+			link_src, _ := get_macs(packet)
+
+			/* add device and mark this device as a powerline */
+			devices.add(link_src)
+			devices[link_src].powerline = true
+		}
+	}
+}
+
 /*
  **********************
  *** CONSOLE OUTPUT ***
@@ -303,6 +320,12 @@ func print_bridge(device *device_info) {
 	fmt.Printf(bridge_header)
 }
 
+/* print powerline information in device table */
+func print_powerline(device *device_info) {
+	powerline_header := "    Powerline: true\n"
+	fmt.Printf(powerline_header)
+}
+
 /* print device table periodically */
 func print_devices() {
 	devices_fmt :=
@@ -330,6 +353,10 @@ func print_devices() {
 			if device.router {
 				/* print router info */
 				print_router(device)
+			}
+			if device.powerline {
+				/* print powerline info */
+				print_powerline(device)
 			}
 			for ip, info := range device.ips {
 				/* print IP address info */
@@ -374,6 +401,7 @@ func listen() {
 		parse_ndp(packet)
 		parse_dhcp(packet)
 		parse_stp(packet)
+		parse_plc(packet)
 		parse_macs_and_ips(packet)
 	}
 }
