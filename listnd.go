@@ -368,13 +368,17 @@ func parse_mld(packet gopacket.Packet) {
 func parse_dhcp(packet gopacket.Packet) {
 	dhcpLayer := packet.Layer(layers.LayerTypeDHCPv4)
 	if dhcpLayer != nil {
-		debug("DHCP Request or Reply")
 		dhcp, _ := dhcpLayer.(*layers.DHCPv4)
 		link_src, _ := get_macs(packet)
 
 		/* add device */
 		devices.add(link_src)
+		if dhcp.Operation == layers.DHCPOpRequest {
+			debug("DHCP Request")
+			return
+		}
 		if dhcp.Operation == layers.DHCPOpReply {
+			debug("DHCP Reply")
 			/* mark this device as dhcp server */
 			devices[link_src].dhcp = true
 		}
