@@ -251,6 +251,40 @@ func parse_ndp(packet gopacket.Packet) {
 	}
 }
 
+/* parse igmp packets */
+func parse_igmp(packet gopacket.Packet) {
+	igmpLayer := packet.Layer(layers.LayerTypeIGMP)
+	if igmpLayer != nil {
+		igmp, _ := igmpLayer.(*layers.IGMP)
+		if igmp.Type == layers.IGMPMembershipQuery {
+			debug("IGMP Membership Query")
+			/* queries are sent by routers, mark as router */
+			link_src, _ := get_macs(packet)
+			devices[link_src].router = true
+		}
+		if igmp.Type == layers.IGMPMembershipReportV3 {
+			debug("IGMP Membership Report")
+			link_src, _ := get_macs(packet)
+
+			/* parse multicast addresses and add/remove them */
+			for _, v := range igmp.GroupRecords {
+				switch v.Type {
+				case layers.IGMPIsEx, layers.IGMPToEx:
+					/* add IP */
+					devices[link_src].add_ip(
+						layers.NewIPEndpoint(
+							v.MulticastAddress))
+				case layers.IGMPIsIn, layers.IGMPToIn:
+					/* remove IP */
+					devices[link_src].del_ip(
+						layers.NewIPEndpoint(
+							v.MulticastAddress))
+				}
+			}
+		}
+	}
+}
+
 /* parse dhcp packets */
 func parse_dhcp(packet gopacket.Packet) {
 	dhcpLayer := packet.Layer(layers.LayerTypeDHCPv4)
@@ -312,7 +346,7 @@ func debug(text string) {
 
 /* print router information in device table */
 func print_router(device *device_info) {
-	router_header := "    Router:\n"
+	router_header := "    Router: true\n"
 	prefix_fmt := "        Prefix: %v/%v\n"
 
 	fmt.Printf(router_header)
@@ -414,6 +448,7 @@ func listen() {
 		parse_src_mac(packet)
 		parse_arp(packet)
 		parse_ndp(packet)
+		parse_igmp(packet)
 		parse_dhcp(packet)
 		parse_stp(packet)
 		parse_plc(packet)
