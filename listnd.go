@@ -171,8 +171,15 @@ func parse_macs_and_ips(packet gopacket.Packet) {
 func parse_arp(packet gopacket.Packet) {
 	arpLayer := packet.Layer(layers.LayerTypeARP)
 	if arpLayer != nil {
-		debug("ARP Request or Reply")
 		arp, _ := arpLayer.(*layers.ARP)
+
+		/* arp request or reply */
+		switch arp.Operation {
+		case layers.ARPRequest:
+			debug("ARP Request")
+		case layers.ARPReply:
+			debug("ARP Reply")
+		}
 		/* get addresses */
 		link_src := layers.NewMACEndpoint(arp.SourceHwAddress)
 		net_src := layers.NewIPEndpoint(arp.SourceProtAddress)
