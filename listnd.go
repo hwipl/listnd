@@ -261,18 +261,48 @@ func parse_ndp(packet gopacket.Packet) {
 /* parse igmp packets */
 func parse_igmp(packet gopacket.Packet) {
 	igmpLayer := packet.Layer(layers.LayerTypeIGMP)
-	if igmpLayer != nil {
-		igmp, _ := igmpLayer.(*layers.IGMP)
-		if igmp.Type == layers.IGMPMembershipQuery {
-			debug("IGMP Membership Query")
+	if igmpLayer == nil {
+		/* no igmp message, stop */
+		return
+	}
+	link_src, _ := get_macs(packet)
+
+	/* igmp v1 or v2 */
+	if igmp, ok := igmpLayer.(*layers.IGMPv1or2); ok {
+		/* parse message type */
+		switch igmp.Type {
+		case layers.IGMPMembershipQuery:
+			debug("IGMPv1or2 Membership Query")
 			/* queries are sent by routers, mark as router */
-			link_src, _ := get_macs(packet)
+			devices[link_src].router = true
+		case layers.IGMPMembershipReportV1:
+			debug("IGMPv1 Membership Report")
+			/* add IP */
+			devices[link_src].add_ip(layers.NewIPEndpoint(
+				igmp.GroupAddress))
+		case layers.IGMPMembershipReportV2:
+			debug("IGMPv2 Membership Report")
+			/* add IP */
+			devices[link_src].add_ip(layers.NewIPEndpoint(
+				igmp.GroupAddress))
+		case layers.IGMPLeaveGroup:
+			debug("IGMPv1or2 Leave Group")
+			/* remove IP */
+			devices[link_src].del_ip(layers.NewIPEndpoint(
+				igmp.GroupAddress))
+		}
+	}
+
+	/* igmp v3 */
+	if igmp, ok := igmpLayer.(*layers.IGMP); ok {
+		if igmp.Type == layers.IGMPMembershipQuery {
+			debug("IGMPv3 Membership Query")
+			/* queries are sent by routers, mark as router */
 			devices[link_src].router = true
 		}
-		if igmp.Type == layers.IGMPMembershipReportV3 {
-			debug("IGMP Membership Report")
-			link_src, _ := get_macs(packet)
 
+		if igmp.Type == layers.IGMPMembershipReportV3 {
+			debug("IGMPv3 Membership Report")
 			/* parse multicast addresses and add/remove them */
 			for _, v := range igmp.GroupRecords {
 				switch v.Type {
