@@ -32,6 +32,12 @@ var (
  ********************
  */
 
+/* struct for vlan information */
+type vlan_info struct {
+	vlan		uint16
+	packets		int
+}
+
 /* struct for ip addresses of devices on the network */
 type ip_info struct {
 	ip		gopacket.Endpoint
@@ -41,6 +47,7 @@ type ip_info struct {
 /* struct for devices found on the network */
 type device_info struct {
 	mac		gopacket.Endpoint
+	vlans		map[uint16]*vlan_info
 	powerline	bool
 	bridge		bool
 	dhcp		bool
@@ -52,6 +59,17 @@ type device_info struct {
 
 /* device table definition */
 type device_map map[gopacket.Endpoint]*device_info
+
+/* add a vlan to a device */
+func (d *device_info) add_vlan(vlan_id uint16) {
+	/* add entry if it does not exist */
+	if d.vlans[vlan_id] == nil {
+		debug("Adding new vlan to an entry")
+		vlan := vlan_info{}
+		vlan.vlan = vlan_id
+		d.vlans[vlan_id] = &vlan
+	}
+}
 
 /* add an ip address to a device */
 func (d *device_info) add_ip(net_addr gopacket.Endpoint) {
@@ -90,6 +108,7 @@ func (d device_map) add(link_addr gopacket.Endpoint) {
 		debug("Adding new entry")
 		device := device_info{}
 		device.mac = link_addr
+		device.vlans = make(map[uint16]*vlan_info)
 		device.ips = make(map[gopacket.Endpoint]*ip_info)
 		d[link_addr] = &device
 	}
@@ -164,6 +183,17 @@ func parse_macs_and_ips(packet gopacket.Packet) {
 	if devices[link_dst] != nil &&
 	   devices[link_dst].ips[net_dst] != nil {
 		   devices[link_dst].ips[net_dst].packets += 1
+	}
+}
+
+/* parse VLAN tags */
+func parse_vlan(packet gopacket.Packet) {
+	vlanLayer := packet.Layer(layers.LayerTypeDot1Q)
+	if vlanLayer != nil {
+		debug("VLAN Tag")
+		vlan, _ := vlanLayer.(*layers.Dot1Q)
+		link_src, _ := get_macs(packet)
+		devices[link_src].add_vlan(vlan.VLANIdentifier)
 	}
 }
 
@@ -539,6 +569,7 @@ func print_devices() {
 		"==============================" +
 		"==============================\n"
 	mac_fmt := "MAC: %s\n"
+	vlan_fmt := "    VLAN: %d\n"
 	ip_fmt := "    IP: %-40s (%d pkts)\n"
 	for {
 		/* start with devices header */
@@ -561,6 +592,10 @@ func print_devices() {
 			if device.powerline {
 				/* print powerline info */
 				print_powerline(device)
+			}
+			for _, vlan := range device.vlans {
+				/* print VLAN info */
+				fmt.Printf(vlan_fmt, vlan.vlan)
 			}
 			for ip, info := range device.ips {
 				/* print IP address info */
@@ -601,6 +636,7 @@ func listen() {
 	for packet := range packetSource.Packets() {
 		/* parse packet */
 		parse_src_mac(packet)
+		parse_vlan(packet)
 		parse_arp(packet)
 		parse_ndp(packet)
 		parse_igmp(packet)
