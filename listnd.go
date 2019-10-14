@@ -323,10 +323,10 @@ func parse_igmp(packet gopacket.Packet) {
 }
 
 /* parse mld packets */
-var mldv2_isEx = layers.MLDv2MulticastAddressRecordTypeModeIsExcluded
-var mldv2_toEx = layers.MLDv2MulticastAddressRecordTypeChangeToExcludeMode
-var mldv2_isIn = layers.MLDv2MulticastAddressRecordTypeModeIsIncluded
-var mldv2_toIn = layers.MLDv2MulticastAddressRecordTypeChangeToIncludeMode
+const mldv2_isEx = layers.MLDv2MulticastAddressRecordTypeModeIsExcluded
+const mldv2_toEx = layers.MLDv2MulticastAddressRecordTypeChangeToExcludeMode
+const mldv2_isIn = layers.MLDv2MulticastAddressRecordTypeModeIsIncluded
+const mldv2_toIn = layers.MLDv2MulticastAddressRecordTypeChangeToIncludeMode
 
 func parse_mld(packet gopacket.Packet) {
 	/* MLDv1 */
