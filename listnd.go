@@ -3,27 +3,28 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/pcap"
-	"github.com/google/gopacket/layers"
 	"log"
-	"time"
 	"net"
+	"time"
+
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
+	"github.com/google/gopacket/pcap"
 )
 
 /* variable definitions */
 var (
 	/* network device map and debugging mode */
-	devices		= make(device_map)
-	debug_mode	bool = false
+	devices        = make(deviceMap)
+	debugMode bool = false
 
 	/* pcap settings */
-	pcap_promisc	bool = true
-	pcap_device	string = "eth0"
-	pcap_snaplen	int = 1024
-	pcap_timeout	int = 1
-	pcap_handle	*pcap.Handle
-	pcap_err	error
+	pcapPromisc bool   = true
+	pcapDevice  string = "eth0"
+	pcapSnaplen int    = 1024
+	pcapTimeout int    = 1
+	pcapHandle  *pcap.Handle
+	pcapErr     error
 )
 
 /*
@@ -33,100 +34,100 @@ var (
  */
 
 /* struct for vlan information */
-type vlan_info struct {
-	vlan		uint16
-	packets		int
+type vlanInfo struct {
+	vlan    uint16
+	packets int
 }
 
 /* struct for ip addresses of devices on the network */
-type ip_info struct {
-	ip		gopacket.Endpoint
-	packets		int
+type ipInfo struct {
+	ip      gopacket.Endpoint
+	packets int
 }
 
 /* struct for devices found on the network */
-type device_info struct {
-	mac		gopacket.Endpoint
-	vlans		map[uint16]*vlan_info
-	powerline	bool
-	bridge		bool
-	dhcp		bool
-	router		bool
-	prefixes	[]layers.ICMPv6Option
-	packets		int
-	ips		map[gopacket.Endpoint]*ip_info
+type deviceInfo struct {
+	mac       gopacket.Endpoint
+	vlans     map[uint16]*vlanInfo
+	powerline bool
+	bridge    bool
+	dhcp      bool
+	router    bool
+	prefixes  []layers.ICMPv6Option
+	packets   int
+	ips       map[gopacket.Endpoint]*ipInfo
 }
 
 /* device table definition */
-type device_map map[gopacket.Endpoint]*device_info
+type deviceMap map[gopacket.Endpoint]*deviceInfo
 
 /* add a vlan to a device */
-func (d *device_info) add_vlan(vlan_id uint16) {
+func (d *deviceInfo) addVlan(vlanID uint16) {
 	/* add entry if it does not exist */
-	if d.vlans[vlan_id] == nil {
+	if d.vlans[vlanID] == nil {
 		debug("Adding new vlan to an entry")
-		vlan := vlan_info{}
-		vlan.vlan = vlan_id
-		d.vlans[vlan_id] = &vlan
+		vlan := vlanInfo{}
+		vlan.vlan = vlanID
+		d.vlans[vlanID] = &vlan
 	}
 }
 
 /* add an ip address to a device */
-func (d *device_info) add_ip(net_addr gopacket.Endpoint) {
+func (d *deviceInfo) addIP(netAddr gopacket.Endpoint) {
 	/* make sure address is valid */
-	if !endpoint_is_valid_ip(net_addr) {
+	if !endpointIsValidIP(netAddr) {
 		return
 	}
 
 	/* add entry if it does not exist */
-	if d.ips[net_addr] == nil {
+	if d.ips[netAddr] == nil {
 		debug("Adding new ip to an entry")
-		ip := ip_info{}
-		ip.ip = net_addr
-		d.ips[net_addr] = &ip
+		ip := ipInfo{}
+		ip.ip = netAddr
+		d.ips[netAddr] = &ip
 	}
 }
 
 /* remove an ip address from a device */
-func (d *device_info) del_ip(net_addr gopacket.Endpoint) {
+func (d *deviceInfo) delIP(netAddr gopacket.Endpoint) {
 	/* make sure address is valid */
-	if !endpoint_is_valid_ip(net_addr) {
+	if !endpointIsValidIP(netAddr) {
 		return
 	}
 
 	/* remove entry if it exists */
-	if d.ips[net_addr] != nil {
+	if d.ips[netAddr] != nil {
 		debug("Deleting ip from an entry")
-		delete(d.ips, net_addr)
+		delete(d.ips, netAddr)
 	}
 }
 
 /* add a device to the device table */
-func (d device_map) add(link_addr gopacket.Endpoint) {
+func (d deviceMap) add(linkAddr gopacket.Endpoint) {
 	/* create table entries if necessary */
-	if d[link_addr] == nil {
+	if d[linkAddr] == nil {
 		debug("Adding new entry")
-		device := device_info{}
-		device.mac = link_addr
-		device.vlans = make(map[uint16]*vlan_info)
-		device.ips = make(map[gopacket.Endpoint]*ip_info)
-		d[link_addr] = &device
+		device := deviceInfo{}
+		device.mac = linkAddr
+		device.vlans = make(map[uint16]*vlanInfo)
+		device.ips = make(map[gopacket.Endpoint]*ipInfo)
+		d[linkAddr] = &device
 	}
 }
 
 /* add a device table entry with mac and ip address*/
-func (d device_map) add_mac_ip(link_addr, net_addr gopacket.Endpoint) {
-	d.add(link_addr)
-	d[link_addr].add_ip(net_addr)
+func (d deviceMap) addMacIP(linkAddr, netAddr gopacket.Endpoint) {
+	d.add(linkAddr)
+	d[linkAddr].addIP(netAddr)
 }
 
 /* check if IP address in endpoint is valid */
-var addr_zero gopacket.Endpoint
-var addr_unspecv4 = layers.NewIPEndpoint(net.ParseIP("0.0.0.0"))
-var addr_unspecv6 = layers.NewIPEndpoint(net.ParseIP("::"))
+var addrZero gopacket.Endpoint
+var addrUnspecv4 = layers.NewIPEndpoint(net.ParseIP("0.0.0.0"))
+var addrUnspecv6 = layers.NewIPEndpoint(net.ParseIP("::"))
 
-func endpoint_is_valid_ip(e gopacket.Endpoint) (bool) {
-	if e == addr_zero || e == addr_unspecv4 || e == addr_unspecv6 {
+func endpointIsValidIP(e gopacket.Endpoint) bool {
+	if e == addrZero || e == addrUnspecv4 || e == addrUnspecv6 {
 		return false
 	}
 
@@ -140,65 +141,65 @@ func endpoint_is_valid_ip(e gopacket.Endpoint) (bool) {
  */
 
 /* helper for getting src and dst mac addresses of packet */
-func get_macs(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
-	var link_src, link_dst gopacket.Endpoint
+func getMacs(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
+	var linkSrc, linkDst gopacket.Endpoint
 
 	if link := packet.LinkLayer(); link != nil {
 		/* extract MAC addresses */
-		link_src, link_dst = link.LinkFlow().Endpoints()
+		linkSrc, linkDst = link.LinkFlow().Endpoints()
 	}
 
-	return link_src, link_dst
+	return linkSrc, linkDst
 }
 
 /* helper for getting src and dst ip addresses of packet */
-func get_ips(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
-	var net_src, net_dst gopacket.Endpoint
+func getIps(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
+	var netSrc, netDst gopacket.Endpoint
 
 	if net := packet.NetworkLayer(); net != nil {
 		/* extract IP addresses */
-		net_src, net_dst = net.NetworkFlow().Endpoints()
+		netSrc, netDst = net.NetworkFlow().Endpoints()
 	}
 
-	return net_src, net_dst
+	return netSrc, netDst
 }
 
 /* parse the source MAC address and add it to device table */
-func parse_src_mac(packet gopacket.Packet) {
-	link_src, _ := get_macs(packet)
-	devices.add(link_src)
+func parseSrcMac(packet gopacket.Packet) {
+	linkSrc, _ := getMacs(packet)
+	devices.add(linkSrc)
 }
 
 /* parse MAC and IP addresses in packet */
-func parse_macs_and_ips(packet gopacket.Packet) {
+func parseMacsAndIps(packet gopacket.Packet) {
 	/* get addresses */
-	link_src, link_dst := get_macs(packet)
-	net_src, net_dst := get_ips(packet)
+	linkSrc, linkDst := getMacs(packet)
+	netSrc, netDst := getIps(packet)
 
 	/* increase packet counters */
-	if devices[link_src] != nil &&
-	   devices[link_src].ips[net_src] != nil {
-		   devices[link_src].ips[net_src].packets += 1
+	if devices[linkSrc] != nil &&
+		devices[linkSrc].ips[netSrc] != nil {
+		devices[linkSrc].ips[netSrc].packets++
 	}
-	if devices[link_dst] != nil &&
-	   devices[link_dst].ips[net_dst] != nil {
-		   devices[link_dst].ips[net_dst].packets += 1
+	if devices[linkDst] != nil &&
+		devices[linkDst].ips[netDst] != nil {
+		devices[linkDst].ips[netDst].packets++
 	}
 }
 
 /* parse VLAN tags */
-func parse_vlan(packet gopacket.Packet) {
+func parseVlan(packet gopacket.Packet) {
 	vlanLayer := packet.Layer(layers.LayerTypeDot1Q)
 	if vlanLayer != nil {
 		debug("VLAN Tag")
 		vlan, _ := vlanLayer.(*layers.Dot1Q)
-		link_src, _ := get_macs(packet)
-		devices[link_src].add_vlan(vlan.VLANIdentifier)
+		linkSrc, _ := getMacs(packet)
+		devices[linkSrc].addVlan(vlan.VLANIdentifier)
 	}
 }
 
 /* parse ARP packets */
-func parse_arp(packet gopacket.Packet) {
+func parseArp(packet gopacket.Packet) {
 	arpLayer := packet.Layer(layers.LayerTypeARP)
 	if arpLayer != nil {
 		arp, _ := arpLayer.(*layers.ARP)
@@ -211,25 +212,25 @@ func parse_arp(packet gopacket.Packet) {
 			debug("ARP Reply")
 		}
 		/* get addresses */
-		link_src := layers.NewMACEndpoint(arp.SourceHwAddress)
-		net_src := layers.NewIPEndpoint(arp.SourceProtAddress)
+		linkSrc := layers.NewMACEndpoint(arp.SourceHwAddress)
+		netSrc := layers.NewIPEndpoint(arp.SourceProtAddress)
 
 		/* add to table */
-		devices.add_mac_ip(link_src, net_src)
+		devices.addMacIP(linkSrc, netSrc)
 	}
 }
 
 /* parse neighbor discovery protocol packets */
-func parse_ndp(packet gopacket.Packet) {
+func parseNdp(packet gopacket.Packet) {
 	nsolLayer := packet.Layer(layers.LayerTypeICMPv6NeighborSolicitation)
 	if nsolLayer != nil {
 		debug("Neighbor Solicitation")
 		/* neighbor solicitation, get src mac and src ip */
-		link_src, _ := get_macs(packet)
-		net_src, _ := get_ips(packet)
+		linkSrc, _ := getMacs(packet)
+		netSrc, _ := getIps(packet)
 
 		/* add to table */
-		devices.add_mac_ip(link_src, net_src)
+		devices.addMacIP(linkSrc, netSrc)
 
 		return
 	}
@@ -239,11 +240,11 @@ func parse_ndp(packet gopacket.Packet) {
 		debug("Neighbor Advertisement")
 		/* neighbor advertisement, get src mac and target ip */
 		adv, _ := nadvLayer.(*layers.ICMPv6NeighborAdvertisement)
-		target_ip := layers.NewIPEndpoint(adv.TargetAddress)
-		link_src, _ := get_macs(packet)
+		targetIP := layers.NewIPEndpoint(adv.TargetAddress)
+		linkSrc, _ := getMacs(packet)
 
 		/* add to table */
-		devices.add_mac_ip(link_src, target_ip)
+		devices.addMacIP(linkSrc, targetIP)
 
 		return
 	}
@@ -252,11 +253,11 @@ func parse_ndp(packet gopacket.Packet) {
 	if rsolLayer != nil {
 		debug("Router Solicitation")
 		/* router solicitation, get src mac and src ip */
-		link_src, _ := get_macs(packet)
-		net_src, _ := get_ips(packet)
+		linkSrc, _ := getMacs(packet)
+		netSrc, _ := getIps(packet)
 
 		/* add to table */
-		devices.add_mac_ip(link_src, net_src)
+		devices.addMacIP(linkSrc, netSrc)
 
 		return
 	}
@@ -265,22 +266,22 @@ func parse_ndp(packet gopacket.Packet) {
 	if radvLayer != nil {
 		debug("Router Advertisement")
 		/* router advertisement, get src mac and src ip */
-		link_src, _ := get_macs(packet)
-		net_src, _ := get_ips(packet)
+		linkSrc, _ := getMacs(packet)
+		netSrc, _ := getIps(packet)
 
 		/* add to table */
-		devices.add_mac_ip(link_src, net_src)
+		devices.addMacIP(linkSrc, netSrc)
 
 		/* mark device as a router */
-		devices[link_src].router = true
+		devices[linkSrc].router = true
 
 		/* flush prefixes and refill with advertised ones */
 		adv, _ := radvLayer.(*layers.ICMPv6RouterAdvertisement)
-		devices[link_src].prefixes = nil
+		devices[linkSrc].prefixes = nil
 		for i := range adv.Options {
 			if adv.Options[i].Type == layers.ICMPv6OptPrefixInfo {
-				devices[link_src].prefixes = append(
-					devices[link_src].prefixes,
+				devices[linkSrc].prefixes = append(
+					devices[linkSrc].prefixes,
 					adv.Options[i])
 			}
 		}
@@ -289,13 +290,13 @@ func parse_ndp(packet gopacket.Packet) {
 }
 
 /* parse igmp packets */
-func parse_igmp(packet gopacket.Packet) {
+func parseIgmp(packet gopacket.Packet) {
 	igmpLayer := packet.Layer(layers.LayerTypeIGMP)
 	if igmpLayer == nil {
 		/* no igmp message, stop */
 		return
 	}
-	link_src, _ := get_macs(packet)
+	linkSrc, _ := getMacs(packet)
 
 	/* igmp v1 or v2 */
 	if igmp, ok := igmpLayer.(*layers.IGMPv1or2); ok {
@@ -304,21 +305,21 @@ func parse_igmp(packet gopacket.Packet) {
 		case layers.IGMPMembershipQuery:
 			debug("IGMPv1or2 Membership Query")
 			/* queries are sent by routers, mark as router */
-			devices[link_src].router = true
+			devices[linkSrc].router = true
 		case layers.IGMPMembershipReportV1:
 			debug("IGMPv1 Membership Report")
 			/* add IP */
-			devices[link_src].add_ip(layers.NewIPEndpoint(
+			devices[linkSrc].addIP(layers.NewIPEndpoint(
 				igmp.GroupAddress))
 		case layers.IGMPMembershipReportV2:
 			debug("IGMPv2 Membership Report")
 			/* add IP */
-			devices[link_src].add_ip(layers.NewIPEndpoint(
+			devices[linkSrc].addIP(layers.NewIPEndpoint(
 				igmp.GroupAddress))
 		case layers.IGMPLeaveGroup:
 			debug("IGMPv1or2 Leave Group")
 			/* remove IP */
-			devices[link_src].del_ip(layers.NewIPEndpoint(
+			devices[linkSrc].delIP(layers.NewIPEndpoint(
 				igmp.GroupAddress))
 		}
 	}
@@ -328,7 +329,7 @@ func parse_igmp(packet gopacket.Packet) {
 		if igmp.Type == layers.IGMPMembershipQuery {
 			debug("IGMPv3 Membership Query")
 			/* queries are sent by routers, mark as router */
-			devices[link_src].router = true
+			devices[linkSrc].router = true
 		}
 
 		if igmp.Type == layers.IGMPMembershipReportV3 {
@@ -338,12 +339,12 @@ func parse_igmp(packet gopacket.Packet) {
 				switch v.Type {
 				case layers.IGMPIsEx, layers.IGMPToEx:
 					/* add IP */
-					devices[link_src].add_ip(
+					devices[linkSrc].addIP(
 						layers.NewIPEndpoint(
 							v.MulticastAddress))
 				case layers.IGMPIsIn, layers.IGMPToIn:
 					/* remove IP */
-					devices[link_src].del_ip(
+					devices[linkSrc].delIP(
 						layers.NewIPEndpoint(
 							v.MulticastAddress))
 				}
@@ -353,19 +354,19 @@ func parse_igmp(packet gopacket.Packet) {
 }
 
 /* parse mld packets */
-const mldv2_isEx = layers.MLDv2MulticastAddressRecordTypeModeIsExcluded
-const mldv2_toEx = layers.MLDv2MulticastAddressRecordTypeChangeToExcludeMode
-const mldv2_isIn = layers.MLDv2MulticastAddressRecordTypeModeIsIncluded
-const mldv2_toIn = layers.MLDv2MulticastAddressRecordTypeChangeToIncludeMode
+const mldv2IsEx = layers.MLDv2MulticastAddressRecordTypeModeIsExcluded
+const mldv2ToEx = layers.MLDv2MulticastAddressRecordTypeChangeToExcludeMode
+const mldv2IsIn = layers.MLDv2MulticastAddressRecordTypeModeIsIncluded
+const mldv2ToIn = layers.MLDv2MulticastAddressRecordTypeChangeToIncludeMode
 
-func parse_mld(packet gopacket.Packet) {
+func parseMld(packet gopacket.Packet) {
 	/* MLDv1 */
 	qlv1 := packet.Layer(layers.LayerTypeMLDv1MulticastListenerQuery)
 	if qlv1 != nil {
 		debug("MLDv1 Query Message")
 		/* queries are sent by routers, mark as router */
-		link_src, _ := get_macs(packet)
-		devices[link_src].router = true
+		linkSrc, _ := getMacs(packet)
+		devices[linkSrc].router = true
 		return
 	}
 
@@ -374,8 +375,8 @@ func parse_mld(packet gopacket.Packet) {
 		debug("MLDv1 Done Message")
 		/* parse and remove multicast address */
 		done, _ := dlv1.(*layers.MLDv1MulticastListenerDoneMessage)
-		link_src, _ := get_macs(packet)
-		devices[link_src].del_ip(
+		linkSrc, _ := getMacs(packet)
+		devices[linkSrc].delIP(
 			layers.NewIPEndpoint(done.MulticastAddress))
 		return
 	}
@@ -385,8 +386,8 @@ func parse_mld(packet gopacket.Packet) {
 		debug("MLDv1 Report Message")
 		/* parse and add multicast address */
 		report, _ := rlv1.(*layers.MLDv1MulticastListenerReportMessage)
-		link_src, _ := get_macs(packet)
-		devices[link_src].add_ip(
+		linkSrc, _ := getMacs(packet)
+		devices[linkSrc].addIP(
 			layers.NewIPEndpoint(report.MulticastAddress))
 		return
 	}
@@ -396,8 +397,8 @@ func parse_mld(packet gopacket.Packet) {
 	if qlv2 != nil {
 		debug("MLDv2 Query Message")
 		/* queries are sent by routers, mark as router */
-		link_src, _ := get_macs(packet)
-		devices[link_src].router = true
+		linkSrc, _ := getMacs(packet)
+		devices[linkSrc].router = true
 		return
 	}
 
@@ -405,18 +406,18 @@ func parse_mld(packet gopacket.Packet) {
 	if rlv2 != nil {
 		debug("MLDv2 Report Message")
 		report, _ := rlv2.(*layers.MLDv2MulticastListenerReportMessage)
-		link_src, _ := get_macs(packet)
+		linkSrc, _ := getMacs(packet)
 
 		/* parse multicast addresses and add/remove them */
 		for _, v := range report.MulticastAddressRecords {
 			switch v.RecordType {
-			case mldv2_isEx, mldv2_toEx:
+			case mldv2IsEx, mldv2ToEx:
 				/* add IP */
-				devices[link_src].add_ip(layers.NewIPEndpoint(
+				devices[linkSrc].addIP(layers.NewIPEndpoint(
 					v.MulticastAddress))
-			case mldv2_isIn, mldv2_toIn:
+			case mldv2IsIn, mldv2ToIn:
 				/* remove IP */
-				devices[link_src].del_ip(layers.NewIPEndpoint(
+				devices[linkSrc].delIP(layers.NewIPEndpoint(
 					v.MulticastAddress))
 			}
 		}
@@ -425,15 +426,15 @@ func parse_mld(packet gopacket.Packet) {
 }
 
 /* parse dhcp packets */
-func parse_dhcp(packet gopacket.Packet) {
+func parseDhcp(packet gopacket.Packet) {
 	/* DHCP v4 */
 	dhcpLayer := packet.Layer(layers.LayerTypeDHCPv4)
 	if dhcpLayer != nil {
 		dhcp, _ := dhcpLayer.(*layers.DHCPv4)
-		link_src, _ := get_macs(packet)
+		linkSrc, _ := getMacs(packet)
 
 		/* add device */
-		devices.add(link_src)
+		devices.add(linkSrc)
 		if dhcp.Operation == layers.DHCPOpRequest {
 			debug("DHCP Request")
 			return
@@ -441,7 +442,7 @@ func parse_dhcp(packet gopacket.Packet) {
 		if dhcp.Operation == layers.DHCPOpReply {
 			debug("DHCP Reply")
 			/* mark this device as dhcp server */
-			devices[link_src].dhcp = true
+			devices[linkSrc].dhcp = true
 		}
 	}
 
@@ -449,7 +450,7 @@ func parse_dhcp(packet gopacket.Packet) {
 	dhcpv6Layer := packet.Layer(layers.LayerTypeDHCPv6)
 	if dhcpv6Layer != nil {
 		dhcp, _ := dhcpv6Layer.(*layers.DHCPv6)
-		link_src, _ := get_macs(packet)
+		linkSrc, _ := getMacs(packet)
 
 		/* parse message type to determine if server or client */
 		switch dhcp.MsgType {
@@ -459,7 +460,7 @@ func parse_dhcp(packet gopacket.Packet) {
 			debug("DHCPv6 Advertise")
 		case layers.DHCPv6MsgTypeRequest:
 			debug("DHCPv6 Request")
-			devices[link_src].dhcp = true
+			devices[linkSrc].dhcp = true
 		case layers.DHCPv6MsgTypeConfirm:
 			debug("DHCPv6 Confirm")
 		case layers.DHCPv6MsgTypeRenew:
@@ -468,50 +469,50 @@ func parse_dhcp(packet gopacket.Packet) {
 			debug("DHCPv6 Rebind")
 		case layers.DHCPv6MsgTypeReply:
 			debug("DHCPv6 Reply")
-			devices[link_src].dhcp = true
+			devices[linkSrc].dhcp = true
 		case layers.DHCPv6MsgTypeRelease:
 			debug("DHCPv6 Release")
 		case layers.DHCPv6MsgTypeDecline:
 			debug("DHCPv6 Decline")
 		case layers.DHCPv6MsgTypeReconfigure:
 			debug("DHCPv6 Reconfigure")
-			devices[link_src].dhcp = true
+			devices[linkSrc].dhcp = true
 		case layers.DHCPv6MsgTypeInformationRequest:
 			debug("DHCPv6 Information Request")
 		case layers.DHCPv6MsgTypeRelayForward:
 			debug("DHCPv6 Relay Forward")
 		case layers.DHCPv6MsgTypeRelayReply:
 			debug("DHCPv6 Relay Reply")
-			devices[link_src].dhcp = true
+			devices[linkSrc].dhcp = true
 		}
 	}
 }
 
 /* parse stp packets */
-func parse_stp(packet gopacket.Packet) {
+func parseStp(packet gopacket.Packet) {
 	stpLayer := packet.Layer(layers.LayerTypeSTP)
 	if stpLayer != nil {
 		debug("STP packet")
-		link_src, _ := get_macs(packet)
+		linkSrc, _ := getMacs(packet)
 
 		/* add device and mark this device as a bridge */
-		devices.add(link_src)
-		devices[link_src].bridge = true
+		devices.add(linkSrc)
+		devices[linkSrc].bridge = true
 	}
 }
 
 /* parse plc (power-line communication/homeplug) packets */
-func parse_plc(packet gopacket.Packet) {
+func parsePlc(packet gopacket.Packet) {
 	ethLayer := packet.Layer(layers.LayerTypeEthernet)
 	if ethLayer != nil {
 		eth, _ := ethLayer.(*layers.Ethernet)
 		if eth.EthernetType == 0x88e1 || eth.EthernetType == 0x8912 {
 			debug("PLC packet")
-			link_src, _ := get_macs(packet)
+			linkSrc, _ := getMacs(packet)
 
 			/* add device and mark this device as a powerline */
-			devices.add(link_src)
-			devices[link_src].powerline = true
+			devices.add(linkSrc)
+			devices[linkSrc].powerline = true
 		}
 	}
 }
@@ -524,82 +525,81 @@ func parse_plc(packet gopacket.Packet) {
 
 /* debug output */
 func debug(text string) {
-	if debug_mode {
+	if debugMode {
 		fmt.Println(text)
 	}
 }
 
 /* print router information in device table */
-func print_router(device *device_info) {
-	router_header := "    Router: true\n"
-	prefix_fmt := "        Prefix: %v/%v\n"
+func printRouter(device *deviceInfo) {
+	routerHeader := "    Router: true\n"
+	prefixFmt := "        Prefix: %v/%v\n"
 
-	fmt.Printf(router_header)
+	fmt.Printf(routerHeader)
 	for _, prefix := range device.prefixes {
-		p_len := uint8(prefix.Data[0])
+		pLen := uint8(prefix.Data[0])
 		p := net.IP(prefix.Data[14:])
-		fmt.Printf(prefix_fmt, p, p_len)
+		fmt.Printf(prefixFmt, p, pLen)
 	}
 }
 
 /* print dhcp information in device table */
-func print_dhcp(device *device_info) {
-	dhcp_header := "    DHCP: server\n"
-	fmt.Printf(dhcp_header)
+func printDhcp(device *deviceInfo) {
+	dhcpHeader := "    DHCP: server\n"
+	fmt.Printf(dhcpHeader)
 }
 
 /* print bridge information in device table */
-func print_bridge(device *device_info) {
-	bridge_header := "    Bridge: true\n"
-	fmt.Printf(bridge_header)
+func printBridge(device *deviceInfo) {
+	bridgeHeader := "    Bridge: true\n"
+	fmt.Printf(bridgeHeader)
 }
 
 /* print powerline information in device table */
-func print_powerline(device *device_info) {
-	powerline_header := "    Powerline: true\n"
-	fmt.Printf(powerline_header)
+func printPowerline(device *deviceInfo) {
+	powerlineHeader := "    Powerline: true\n"
+	fmt.Printf(powerlineHeader)
 }
 
 /* print device table periodically */
-func print_devices() {
-	devices_fmt :=
-		"==============================" +
+func printDevices() {
+	devicesFmt := "==============================" +
 		"==============================\n" +
 		"Devices: %d\n" +
 		"==============================" +
 		"==============================\n"
-	mac_fmt := "MAC: %s\n"
-	vlan_fmt := "    VLAN: %d\n"
-	ip_fmt := "    IP: %-40s (%d pkts)\n"
+	macFmt := "MAC: %s\n"
+	vlanFmt := "    VLAN: %d\n"
+	ipFmt := "    IP: %-40s (%d pkts)\n"
 	for {
 		/* start with devices header */
-		fmt.Printf(devices_fmt, len(devices))
+		fmt.Printf(devicesFmt, len(devices))
 		for mac, device := range devices {
 			/* print MAC address */
-			fmt.Printf(mac_fmt, mac)
+			fmt.Printf(macFmt, mac)
 			if device.bridge {
 				/* print bridge info */
-				print_bridge(device)
+				printBridge(device)
 			}
 			if device.dhcp {
 				/* print dhcp info */
-				print_dhcp(device)
+				printDhcp(device)
 			}
 			if device.router {
 				/* print router info */
-				print_router(device)
+				printRouter(device)
 			}
 			if device.powerline {
 				/* print powerline info */
-				print_powerline(device)
+				printPowerline(device)
 			}
 			for _, vlan := range device.vlans {
 				/* print VLAN info */
-				fmt.Printf(vlan_fmt, vlan.vlan)
+				fmt.Printf(vlanFmt, vlan.vlan)
 			}
 			for ip, info := range device.ips {
 				/* print IP address info */
-				fmt.Printf(ip_fmt, ip, info.packets)
+				fmt.Printf(ipFmt, ip, info.packets)
 			}
 			fmt.Println()
 		}
@@ -616,64 +616,64 @@ func print_devices() {
 /* listen on network interface and parse packets */
 func listen() {
 	/* convert pcap parameters from command line arguments */
-	pcap_timeout := time.Duration(pcap_timeout) * time.Second
-	pcap_snaplen := int32(pcap_snaplen)
+	_pcapTimeout := time.Duration(pcapTimeout) * time.Second
+	_pcapSnaplen := int32(pcapSnaplen)
 
 	/* open device */
-	pcap_handle, pcap_err = pcap.OpenLive(pcap_device, pcap_snaplen,
-					      pcap_promisc, pcap_timeout)
-	if pcap_err != nil {
-		log.Fatal(pcap_err)
+	pcapHandle, pcapErr = pcap.OpenLive(pcapDevice, _pcapSnaplen,
+		pcapPromisc, _pcapTimeout)
+	if pcapErr != nil {
+		log.Fatal(pcapErr)
 	}
-	defer pcap_handle.Close()
+	defer pcapHandle.Close()
 
 	/* print device table periodically */
-	go print_devices()
+	go printDevices()
 
 	/* Use the handle as a packet source to process all packets */
-	packetSource := gopacket.NewPacketSource(pcap_handle,
-						 pcap_handle.LinkType())
+	packetSource := gopacket.NewPacketSource(pcapHandle,
+		pcapHandle.LinkType())
 	for packet := range packetSource.Packets() {
 		/* parse packet */
-		parse_src_mac(packet)
-		parse_vlan(packet)
-		parse_arp(packet)
-		parse_ndp(packet)
-		parse_igmp(packet)
-		parse_mld(packet)
-		parse_dhcp(packet)
-		parse_stp(packet)
-		parse_plc(packet)
-		parse_macs_and_ips(packet)
+		parseSrcMac(packet)
+		parseVlan(packet)
+		parseArp(packet)
+		parseNdp(packet)
+		parseIgmp(packet)
+		parseMld(packet)
+		parseDhcp(packet)
+		parseStp(packet)
+		parsePlc(packet)
+		parseMacsAndIps(packet)
 	}
 }
 
 /* parse command line arguments */
-func parse_command_line() {
+func parseCommandLine() {
 	/* define command line arguments */
-	flag.StringVar(&pcap_device, "i", pcap_device,
-		       "the interface to listen on")
-	flag.BoolVar(&pcap_promisc, "pcap-promisc", pcap_promisc,
-		     "Set pcap promiscuous parameter")
-	flag.IntVar(&pcap_timeout, "pcap-timeout", pcap_timeout,
-		    "Set pcap timeout parameter in seconds")
-	flag.IntVar(&pcap_snaplen, "pcap-snaplen", pcap_snaplen,
-		    "Set pcap snapshot length parameter in bytes")
-	flag.BoolVar(&debug_mode, "debug", debug_mode, "debugging mode")
+	flag.StringVar(&pcapDevice, "i", pcapDevice,
+		"the interface to listen on")
+	flag.BoolVar(&pcapPromisc, "pcap-promisc", pcapPromisc,
+		"Set pcap promiscuous parameter")
+	flag.IntVar(&pcapTimeout, "pcap-timeout", pcapTimeout,
+		"Set pcap timeout parameter in seconds")
+	flag.IntVar(&pcapSnaplen, "pcap-snaplen", pcapSnaplen,
+		"Set pcap snapshot length parameter in bytes")
+	flag.BoolVar(&debugMode, "debug", debugMode, "debugging mode")
 
 	/* parse and overwrite default values of settings */
 	flag.Parse()
 
 	/* output settings */
-	debug(fmt.Sprintf("Pcap Listen Device: %s", pcap_device))
-	debug(fmt.Sprintf("Pcap Promiscuous: %t", pcap_promisc))
-	debug(fmt.Sprintf("Pcap Timeout: %d", pcap_timeout))
-	debug(fmt.Sprintf("Pcap Snaplen: %d", pcap_snaplen))
-	debug(fmt.Sprintf("Debugging Output: %t", debug_mode))
+	debug(fmt.Sprintf("Pcap Listen Device: %s", pcapDevice))
+	debug(fmt.Sprintf("Pcap Promiscuous: %t", pcapPromisc))
+	debug(fmt.Sprintf("Pcap Timeout: %d", pcapTimeout))
+	debug(fmt.Sprintf("Pcap Snaplen: %d", pcapSnaplen))
+	debug(fmt.Sprintf("Debugging Output: %t", debugMode))
 }
 
 /* main function */
 func main() {
-	parse_command_line()
+	parseCommandLine()
 	listen()
 }
