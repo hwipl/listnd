@@ -465,6 +465,8 @@ func parseDhcp(packet gopacket.Packet) {
 	if dhcpv6Layer != nil {
 		dhcp, _ := dhcpv6Layer.(*layers.DHCPv6)
 		linkSrc, _ := getMacs(packet)
+		netSrc, _ := getIps(packet)
+		devices[linkSrc].addIP(netSrc)
 
 		/* parse message type to determine if server or client */
 		switch dhcp.MsgType {
