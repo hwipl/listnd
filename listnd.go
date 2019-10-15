@@ -164,14 +164,8 @@ func getIps(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
 	return netSrc, netDst
 }
 
-/* parse the source MAC address and add it to device table */
-func parseSrcMac(packet gopacket.Packet) {
-	linkSrc, _ := getMacs(packet)
-	devices.add(linkSrc)
-}
-
-/* parse MAC and IP addresses in packet */
-func parseMacsAndIps(packet gopacket.Packet) {
+/* update packet counters */
+func updateCounters(packet gopacket.Packet) {
 	/* get addresses */
 	linkSrc, linkDst := getMacs(packet)
 	netSrc, netDst := getIps(packet)
@@ -185,6 +179,12 @@ func parseMacsAndIps(packet gopacket.Packet) {
 		devices[linkDst].ips[netDst] != nil {
 		devices[linkDst].ips[netDst].packets++
 	}
+}
+
+/* parse the source MAC address and add it to device table */
+func parseSrcMac(packet gopacket.Packet) {
+	linkSrc, _ := getMacs(packet)
+	devices.add(linkSrc)
 }
 
 /* parse VLAN tags */
@@ -644,7 +644,7 @@ func listen() {
 		parseDhcp(packet)
 		parseStp(packet)
 		parsePlc(packet)
-		parseMacsAndIps(packet)
+		updateCounters(packet)
 	}
 }
 
