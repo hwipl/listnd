@@ -370,6 +370,8 @@ func parseMld(packet gopacket.Packet) {
 		debug("MLDv1 Query Message")
 		/* queries are sent by routers, mark as router */
 		linkSrc, _ := getMacs(packet)
+		netSrc, _ := getIps(packet)
+		devices[linkSrc].addIP(netSrc)
 		devices[linkSrc].router = true
 		return
 	}
@@ -380,6 +382,8 @@ func parseMld(packet gopacket.Packet) {
 		/* parse and remove multicast address */
 		done, _ := dlv1.(*layers.MLDv1MulticastListenerDoneMessage)
 		linkSrc, _ := getMacs(packet)
+		netSrc, _ := getIps(packet)
+		devices[linkSrc].addIP(netSrc)
 		devices[linkSrc].delIP(
 			layers.NewIPEndpoint(done.MulticastAddress))
 		return
@@ -391,6 +395,8 @@ func parseMld(packet gopacket.Packet) {
 		/* parse and add multicast address */
 		report, _ := rlv1.(*layers.MLDv1MulticastListenerReportMessage)
 		linkSrc, _ := getMacs(packet)
+		netSrc, _ := getIps(packet)
+		devices[linkSrc].addIP(netSrc)
 		devices[linkSrc].addIP(
 			layers.NewIPEndpoint(report.MulticastAddress))
 		return
@@ -402,6 +408,8 @@ func parseMld(packet gopacket.Packet) {
 		debug("MLDv2 Query Message")
 		/* queries are sent by routers, mark as router */
 		linkSrc, _ := getMacs(packet)
+		netSrc, _ := getIps(packet)
+		devices[linkSrc].addIP(netSrc)
 		devices[linkSrc].router = true
 		return
 	}
@@ -411,6 +419,8 @@ func parseMld(packet gopacket.Packet) {
 		debug("MLDv2 Report Message")
 		report, _ := rlv2.(*layers.MLDv2MulticastListenerReportMessage)
 		linkSrc, _ := getMacs(packet)
+		netSrc, _ := getIps(packet)
+		devices[linkSrc].addIP(netSrc)
 
 		/* parse multicast addresses and add/remove them */
 		for _, v := range report.MulticastAddressRecords {
