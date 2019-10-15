@@ -298,6 +298,10 @@ func parseIgmp(packet gopacket.Packet) {
 	}
 	linkSrc, _ := getMacs(packet)
 
+	/* add source IP to device */
+	netSrc, _ := getIps(packet)
+	devices[linkSrc].addIP(netSrc)
+
 	/* igmp v1 or v2 */
 	if igmp, ok := igmpLayer.(*layers.IGMPv1or2); ok {
 		/* parse message type */
