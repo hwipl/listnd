@@ -48,6 +48,7 @@ type ipInfo struct {
 /* struct for devices found on the network */
 type deviceInfo struct {
 	mac       gopacket.Endpoint
+	timestamp time.Time
 	vlans     map[uint16]*vlanInfo
 	powerline bool
 	bridge    bool
@@ -100,6 +101,21 @@ func (d *deviceInfo) delIP(netAddr gopacket.Endpoint) {
 		debug("Deleting ip from an entry")
 		delete(d.ips, netAddr)
 	}
+}
+
+/* add timestamp to a device */
+func (d *deviceInfo) addTimestamp(timestamp time.Time) {
+	d.timestamp = timestamp
+}
+
+/* get seconds since device was last seen */
+func (d *deviceInfo) getAge() float64 {
+	var zero time.Time
+
+	if d.timestamp == zero {
+		return -1
+	}
+	return time.Since(d.timestamp).Seconds()
 }
 
 /* add a device to the device table */
@@ -185,6 +201,7 @@ func updateCounters(packet gopacket.Packet) {
 func parseSrcMac(packet gopacket.Packet) {
 	linkSrc, _ := getMacs(packet)
 	devices.add(linkSrc)
+	devices[linkSrc].addTimestamp(packet.Metadata().Timestamp)
 }
 
 /* parse VLAN tags */
@@ -584,7 +601,7 @@ func printDevices() {
 		"Devices: %d\n" +
 		"==============================" +
 		"==============================\n"
-	macFmt := "MAC: %s\n"
+	macFmt := "MAC: %-43s (age: %.fs)\n"
 	vlanFmt := "    VLAN: %d\n"
 	ipFmt := "    IP: %-40s (%d pkts)\n"
 	for {
@@ -592,7 +609,7 @@ func printDevices() {
 		fmt.Printf(devicesFmt, len(devices))
 		for mac, device := range devices {
 			/* print MAC address */
-			fmt.Printf(macFmt, mac)
+			fmt.Printf(macFmt, mac, device.getAge())
 			if device.bridge {
 				/* print bridge info */
 				printBridge(device)
