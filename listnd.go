@@ -216,8 +216,8 @@ func getIps(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
 /* update statistics */
 func updateStatistics(packet gopacket.Packet) {
 	/* get addresses */
-	linkSrc, linkDst := getMacs(packet)
-	netSrc, netDst := getIps(packet)
+	linkSrc, _ := getMacs(packet)
+	netSrc, _ := getIps(packet)
 
 	/* increase packet counters */
 	packets++
@@ -228,12 +228,6 @@ func updateStatistics(packet gopacket.Packet) {
 		if devices[linkSrc].ips[netSrc] != nil {
 			devices[linkSrc].ips[netSrc].packets++
 			devices[linkSrc].ips[netSrc].addTimestamp(timestamp)
-		}
-	}
-	if devices[linkDst] != nil {
-		devices[linkDst].packets++
-		if devices[linkDst].ips[netDst] != nil {
-			devices[linkDst].ips[netDst].packets++
 		}
 	}
 }
