@@ -73,13 +73,19 @@ type dhcpInfo struct {
 	timestamp time.Time
 }
 
+/* struct for bridge information */
+type bridgeInfo struct {
+	bridge    bool
+	timestamp time.Time
+}
+
 /* struct for devices found on the network */
 type deviceInfo struct {
 	mac       gopacket.Endpoint
 	timestamp time.Time
 	vlans     map[uint16]*vlanInfo
 	powerline *powerlineInfo
-	bridge    bool
+	bridge    *bridgeInfo
 	dhcp      *dhcpInfo
 	router    *routerInfo
 	packets   int
@@ -197,6 +203,21 @@ func (d *dhcpInfo) getAge() float64 {
 	return time.Since(d.timestamp).Seconds()
 }
 
+/* add or update timestamp of bridge info */
+func (b *bridgeInfo) addTimestamp(timestamp time.Time) {
+	b.timestamp = timestamp
+}
+
+/* get seconds since bridge info was last updated */
+func (b *bridgeInfo) getAge() float64 {
+	var zero time.Time
+
+	if b.timestamp == zero {
+		return -1
+	}
+	return time.Since(b.timestamp).Seconds()
+}
+
 /* add a vlan to a device */
 func (d *deviceInfo) addVlan(vlanID uint16) {
 	/* add entry if it does not exist */
@@ -308,6 +329,26 @@ func (d *deviceInfo) setDhcp(enable bool) {
 /* check if device is dhcp capable */
 func (d *deviceInfo) isDhcp() bool {
 	if d.dhcp != nil && d.dhcp.dhcp {
+		return true
+	}
+	return false
+}
+
+/* set/update bridge info of a device */
+func (d *deviceInfo) setBridge(enable bool) {
+	if d.bridge == nil {
+		if !enable {
+			return
+		}
+		bridge := bridgeInfo{}
+		d.bridge = &bridge
+	}
+	d.bridge.bridge = enable
+}
+
+/* check if device is a bridge */
+func (d *deviceInfo) isBridge() bool {
+	if d.bridge != nil && d.bridge.bridge {
 		return true
 	}
 	return false
@@ -750,7 +791,9 @@ func parseStp(packet gopacket.Packet) {
 
 		/* add device and mark this device as a bridge */
 		devices.add(linkSrc)
-		devices[linkSrc].bridge = true
+		devices[linkSrc].setBridge(true)
+		devices[linkSrc].bridge.addTimestamp(
+			packet.Metadata().Timestamp)
 	}
 }
 
@@ -815,12 +858,12 @@ func printDhcp(device *deviceInfo) {
 
 /* print bridge information in device table */
 func printBridge(device *deviceInfo) {
-	bridgeHeader := "    Bridge: true\n"
+	bridgeFmt := "    Bridge: %-36t (age: %.f)\n"
 
-	if !device.bridge {
+	if !device.isBridge() {
 		return
 	}
-	fmt.Printf(bridgeHeader)
+	fmt.Printf(bridgeFmt, device.isBridge(), device.bridge.getAge())
 }
 
 /* print powerline information in device table */
@@ -861,7 +904,7 @@ func printProperties(device *deviceInfo) {
 	propsHeader := "  Properties:\n"
 
 	/* make sure any properties are present */
-	if !device.bridge &&
+	if !device.isBridge() &&
 		!device.isDhcp() &&
 		!device.isRouter() &&
 		!device.isPowerline() &&
