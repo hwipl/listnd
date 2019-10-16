@@ -48,6 +48,13 @@ type ipInfo struct {
 	packets   int
 }
 
+/* struct for router information of devices on the network */
+type routerInfo struct {
+	router    bool
+	prefixes  []layers.ICMPv6Option
+	timestamp time.Time
+}
+
 /* struct for devices found on the network */
 type deviceInfo struct {
 	mac       gopacket.Endpoint
@@ -56,8 +63,7 @@ type deviceInfo struct {
 	powerline bool
 	bridge    bool
 	dhcp      bool
-	router    bool
-	prefixes  []layers.ICMPv6Option
+	router    *routerInfo
 	packets   int
 	ips       map[gopacket.Endpoint]*ipInfo
 }
@@ -93,6 +99,36 @@ func (i *ipInfo) getAge() float64 {
 		return -1
 	}
 	return time.Since(i.timestamp).Seconds()
+}
+
+/* clear prefixes in router info */
+func (r *routerInfo) clearPrefixes() {
+	r.prefixes = nil
+}
+
+/* add prefix to router info */
+func (r *routerInfo) addPrefix(prefix layers.ICMPv6Option) {
+	r.prefixes = append(r.prefixes, prefix)
+}
+
+/* get prefixes from router info */
+func (r *routerInfo) getPrefixes() []layers.ICMPv6Option {
+	return r.prefixes
+}
+
+/* add or update timestamp of router info */
+func (r *routerInfo) addTimestamp(timestamp time.Time) {
+	r.timestamp = timestamp
+}
+
+/* get seconds since router info was last updated */
+func (r *routerInfo) getAge() float64 {
+	var zero time.Time
+
+	if r.timestamp == zero {
+		return -1
+	}
+	return time.Since(r.timestamp).Seconds()
 }
 
 /* add a vlan to a device */
@@ -149,6 +185,26 @@ func (d *deviceInfo) getAge() float64 {
 		return -1
 	}
 	return time.Since(d.timestamp).Seconds()
+}
+
+/* set/update router info of a device */
+func (d *deviceInfo) setRouter(enable bool) {
+	if d.router == nil {
+		if !enable {
+			return
+		}
+		router := routerInfo{}
+		d.router = &router
+	}
+	d.router.router = enable
+}
+
+/* check if device is a router */
+func (d *deviceInfo) isRouter() bool {
+	if d.router != nil && d.router.router {
+		return true
+	}
+	return false
 }
 
 /* add a device to the device table */
@@ -327,15 +383,16 @@ func parseNdp(packet gopacket.Packet) {
 		devices.addMacIP(linkSrc, netSrc)
 
 		/* mark device as a router */
-		devices[linkSrc].router = true
+		devices[linkSrc].setRouter(true)
+		devices[linkSrc].router.addTimestamp(
+			packet.Metadata().Timestamp)
 
 		/* flush prefixes and refill with advertised ones */
 		adv, _ := radvLayer.(*layers.ICMPv6RouterAdvertisement)
-		devices[linkSrc].prefixes = nil
+		devices[linkSrc].router.clearPrefixes()
 		for i := range adv.Options {
 			if adv.Options[i].Type == layers.ICMPv6OptPrefixInfo {
-				devices[linkSrc].prefixes = append(
-					devices[linkSrc].prefixes,
+				devices[linkSrc].router.addPrefix(
 					adv.Options[i])
 			}
 		}
@@ -363,7 +420,9 @@ func parseIgmp(packet gopacket.Packet) {
 		case layers.IGMPMembershipQuery:
 			debug("IGMPv1or2 Membership Query")
 			/* queries are sent by routers, mark as router */
-			devices[linkSrc].router = true
+			devices[linkSrc].setRouter(true)
+			devices[linkSrc].router.addTimestamp(
+				packet.Metadata().Timestamp)
 		case layers.IGMPMembershipReportV1:
 			debug("IGMPv1 Membership Report")
 			/* add IP */
@@ -387,7 +446,9 @@ func parseIgmp(packet gopacket.Packet) {
 		if igmp.Type == layers.IGMPMembershipQuery {
 			debug("IGMPv3 Membership Query")
 			/* queries are sent by routers, mark as router */
-			devices[linkSrc].router = true
+			devices[linkSrc].setRouter(true)
+			devices[linkSrc].router.addTimestamp(
+				packet.Metadata().Timestamp)
 		}
 
 		if igmp.Type == layers.IGMPMembershipReportV3 {
@@ -426,7 +487,9 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		devices[linkSrc].addIP(netSrc)
-		devices[linkSrc].router = true
+		devices[linkSrc].setRouter(true)
+		devices[linkSrc].router.addTimestamp(
+			packet.Metadata().Timestamp)
 		return
 	}
 
@@ -464,7 +527,9 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		devices[linkSrc].addIP(netSrc)
-		devices[linkSrc].router = true
+		devices[linkSrc].setRouter(true)
+		devices[linkSrc].router.addTimestamp(
+			packet.Metadata().Timestamp)
 		return
 	}
 
@@ -602,14 +667,14 @@ func debug(text string) {
 
 /* print router information in device table */
 func printRouter(device *deviceInfo) {
-	routerHeader := "    Router: true\n"
+	routerFmt := "    Router: %-36t (age: %.f)\n"
 	prefixFmt := "      Prefix: %v/%v\n"
 
-	if !device.router {
+	if !device.isRouter() {
 		return
 	}
-	fmt.Printf(routerHeader)
-	for _, prefix := range device.prefixes {
+	fmt.Printf(routerFmt, device.isRouter(), device.router.getAge())
+	for _, prefix := range device.router.getPrefixes() {
 		pLen := uint8(prefix.Data[0])
 		p := net.IP(prefix.Data[14:])
 		fmt.Printf(prefixFmt, p, pLen)
@@ -675,7 +740,7 @@ func printProperties(device *deviceInfo) {
 	/* make sure any properties are present */
 	if !device.bridge &&
 		!device.dhcp &&
-		!device.router &&
+		!device.isRouter() &&
 		!device.powerline &&
 		len(device.vlans) == 0 {
 		return
