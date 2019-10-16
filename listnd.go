@@ -224,6 +224,7 @@ func updateStatistics(packet gopacket.Packet) {
 	if devices[linkSrc] != nil {
 		timestamp := packet.Metadata().Timestamp
 		devices[linkSrc].packets++
+		devices[linkSrc].addTimestamp(timestamp)
 		if devices[linkSrc].ips[netSrc] != nil {
 			devices[linkSrc].ips[netSrc].packets++
 			devices[linkSrc].ips[netSrc].addTimestamp(timestamp)
@@ -241,7 +242,6 @@ func updateStatistics(packet gopacket.Packet) {
 func parseSrcMac(packet gopacket.Packet) {
 	linkSrc, _ := getMacs(packet)
 	devices.add(linkSrc)
-	devices[linkSrc].addTimestamp(packet.Metadata().Timestamp)
 }
 
 /* parse VLAN tags */
