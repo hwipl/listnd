@@ -51,7 +51,13 @@ type ipInfo struct {
 /* struct for router information of devices on the network */
 type routerInfo struct {
 	router    bool
-	prefixes  []layers.ICMPv6Option
+	prefixes  []*prefixInfo
+	timestamp time.Time
+}
+
+/* struct for router's prefix information */
+type prefixInfo struct {
+	prefix    layers.ICMPv6Option
 	timestamp time.Time
 }
 
@@ -107,12 +113,15 @@ func (r *routerInfo) clearPrefixes() {
 }
 
 /* add prefix to router info */
-func (r *routerInfo) addPrefix(prefix layers.ICMPv6Option) {
-	r.prefixes = append(r.prefixes, prefix)
+func (r *routerInfo) addPrefix(prefix layers.ICMPv6Option) *prefixInfo {
+	p := prefixInfo{}
+	p.prefix = prefix
+	r.prefixes = append(r.prefixes, &p)
+	return &p
 }
 
 /* get prefixes from router info */
-func (r *routerInfo) getPrefixes() []layers.ICMPv6Option {
+func (r *routerInfo) getPrefixes() []*prefixInfo {
 	return r.prefixes
 }
 
@@ -129,6 +138,21 @@ func (r *routerInfo) getAge() float64 {
 		return -1
 	}
 	return time.Since(r.timestamp).Seconds()
+}
+
+/* add or update timestamp of prefix info */
+func (p *prefixInfo) addTimestamp(timestamp time.Time) {
+	p.timestamp = timestamp
+}
+
+/* get seconds since prefix info was last updated */
+func (p *prefixInfo) getAge() float64 {
+	var zero time.Time
+
+	if p.timestamp == zero {
+		return -1
+	}
+	return time.Since(p.timestamp).Seconds()
 }
 
 /* add a vlan to a device */
@@ -383,17 +407,18 @@ func parseNdp(packet gopacket.Packet) {
 		devices.addMacIP(linkSrc, netSrc)
 
 		/* mark device as a router */
+		timestamp := packet.Metadata().Timestamp
 		devices[linkSrc].setRouter(true)
-		devices[linkSrc].router.addTimestamp(
-			packet.Metadata().Timestamp)
+		devices[linkSrc].router.addTimestamp(timestamp)
 
 		/* flush prefixes and refill with advertised ones */
 		adv, _ := radvLayer.(*layers.ICMPv6RouterAdvertisement)
 		devices[linkSrc].router.clearPrefixes()
 		for i := range adv.Options {
 			if adv.Options[i].Type == layers.ICMPv6OptPrefixInfo {
-				devices[linkSrc].router.addPrefix(
+				p := devices[linkSrc].router.addPrefix(
 					adv.Options[i])
+				p.addTimestamp(timestamp)
 			}
 		}
 		return
@@ -668,16 +693,17 @@ func debug(text string) {
 /* print router information in device table */
 func printRouter(device *deviceInfo) {
 	routerFmt := "    Router: %-36t (age: %.f)\n"
-	prefixFmt := "      Prefix: %v/%v\n"
+	prefixFmt := "      Prefix: %-34s (age: %.f)\n"
 
 	if !device.isRouter() {
 		return
 	}
 	fmt.Printf(routerFmt, device.isRouter(), device.router.getAge())
 	for _, prefix := range device.router.getPrefixes() {
-		pLen := uint8(prefix.Data[0])
-		p := net.IP(prefix.Data[14:])
-		fmt.Printf(prefixFmt, p, pLen)
+		pLen := uint8(prefix.prefix.Data[0])
+		p := net.IP(prefix.prefix.Data[14:])
+		ps := fmt.Sprintf("%v/%v", p, pLen)
+		fmt.Printf(prefixFmt, ps, prefix.getAge())
 	}
 }
 
