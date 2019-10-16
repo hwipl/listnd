@@ -213,8 +213,8 @@ func getIps(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
 	return netSrc, netDst
 }
 
-/* update packet counters */
-func updateCounters(packet gopacket.Packet) {
+/* update statistics */
+func updateStatistics(packet gopacket.Packet) {
 	/* get addresses */
 	linkSrc, linkDst := getMacs(packet)
 	netSrc, netDst := getIps(packet)
@@ -723,7 +723,7 @@ func listen() {
 		parseDhcp(packet)
 		parseStp(packet)
 		parsePlc(packet)
-		updateCounters(packet)
+		updateStatistics(packet)
 	}
 }
 
