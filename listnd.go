@@ -15,6 +15,7 @@ import (
 /* variable definitions */
 var (
 	/* network device map and debugging mode */
+	packets   int
 	devices        = make(deviceMap)
 	debugMode bool = false
 
@@ -187,13 +188,18 @@ func updateCounters(packet gopacket.Packet) {
 	netSrc, netDst := getIps(packet)
 
 	/* increase packet counters */
-	if devices[linkSrc] != nil &&
-		devices[linkSrc].ips[netSrc] != nil {
-		devices[linkSrc].ips[netSrc].packets++
+	packets++
+	if devices[linkSrc] != nil {
+		devices[linkSrc].packets++
+		if devices[linkSrc].ips[netSrc] != nil {
+			devices[linkSrc].ips[netSrc].packets++
+		}
 	}
-	if devices[linkDst] != nil &&
-		devices[linkDst].ips[netDst] != nil {
-		devices[linkDst].ips[netDst].packets++
+	if devices[linkDst] != nil {
+		devices[linkDst].packets++
+		if devices[linkDst].ips[netDst] != nil {
+			devices[linkDst].ips[netDst].packets++
+		}
 	}
 }
 
@@ -596,17 +602,17 @@ func printPowerline(device *deviceInfo) {
 
 /* print device table periodically */
 func printDevices() {
-	devicesFmt := "==============================" +
-		"==============================\n" +
-		"Devices: %d\n" +
-		"==============================" +
-		"==============================\n"
+	devicesFmt := "===================================" +
+		"===================================\n" +
+		"Devices: %-39d (pkts: %d)\n" +
+		"===================================" +
+		"===================================\n"
 	macFmt := "MAC: %-43s (age: %.fs)\n"
 	vlanFmt := "    VLAN: %d\n"
 	ipFmt := "    IP: %-40s (%d pkts)\n"
 	for {
 		/* start with devices header */
-		fmt.Printf(devicesFmt, len(devices))
+		fmt.Printf(devicesFmt, len(devices), packets)
 		for mac, device := range devices {
 			/* print MAC address */
 			fmt.Printf(macFmt, mac, device.getAge())
