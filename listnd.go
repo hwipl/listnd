@@ -609,8 +609,11 @@ func debug(text string) {
 /* print router information in device table */
 func printRouter(device *deviceInfo) {
 	routerHeader := "    Router: true\n"
-	prefixFmt := "        Prefix: %v/%v\n"
+	prefixFmt := "      Prefix: %v/%v\n"
 
+	if !device.router {
+		return
+	}
 	fmt.Printf(routerHeader)
 	for _, prefix := range device.prefixes {
 		pLen := uint8(prefix.Data[0])
@@ -622,19 +625,105 @@ func printRouter(device *deviceInfo) {
 /* print dhcp information in device table */
 func printDhcp(device *deviceInfo) {
 	dhcpHeader := "    DHCP: server\n"
+
+	if !device.dhcp {
+		return
+	}
 	fmt.Printf(dhcpHeader)
 }
 
 /* print bridge information in device table */
 func printBridge(device *deviceInfo) {
 	bridgeHeader := "    Bridge: true\n"
+
+	if !device.bridge {
+		return
+	}
 	fmt.Printf(bridgeHeader)
 }
 
 /* print powerline information in device table */
 func printPowerline(device *deviceInfo) {
 	powerlineHeader := "    Powerline: true\n"
+
+	if !device.powerline {
+		return
+	}
 	fmt.Printf(powerlineHeader)
+}
+
+/* print vlan information in device table */
+func printVlans(device *deviceInfo) {
+	vlanFmt := "    VLAN: %-38d (age: %.f, pkts: %d)\n"
+
+	if len(device.vlans) == 0 {
+		return
+	}
+	for _, vlan := range device.vlans {
+		/* print VLAN info */
+		fmt.Printf(vlanFmt, vlan.vlan, vlan.getAge(),
+			vlan.packets)
+	}
+}
+
+/* print ip information in device table */
+func _printIps(ips []*ipInfo) {
+	ipFmt := "    IP: %-40s (age: %.f, pkts: %d)\n"
+	for _, info := range ips {
+		fmt.Printf(ipFmt, info.ip, info.getAge(), info.packets)
+	}
+}
+
+/* print device properties in device table */
+func printProperties(device *deviceInfo) {
+	propsHeader := "  Properties:\n"
+
+	/* make sure any properties are present */
+	if !device.bridge &&
+		!device.dhcp &&
+		!device.router &&
+		!device.powerline &&
+		len(device.vlans) == 0 {
+		return
+	}
+	/* start with header */
+	fmt.Printf(propsHeader)
+
+	/* print device properties */
+	printBridge(device)
+	printDhcp(device)
+	printRouter(device)
+	printPowerline(device)
+	printVlans(device)
+}
+
+/* print ip addresses in device table */
+func printIps(device *deviceInfo) {
+	multicastHeader := "  Multicast Addresses:\n"
+	unicastHeader := "  Unicast Addresses:\n"
+	var multicasts []*ipInfo
+	var unicasts []*ipInfo
+
+	/* search for ucast and mcast addresses */
+	for ip, info := range device.ips {
+		if net.IP(ip.Raw()).IsMulticast() {
+			multicasts = append(multicasts, info)
+			continue
+		}
+		unicasts = append(unicasts, info)
+	}
+
+	/* print unicast addresses */
+	if len(unicasts) > 0 {
+		fmt.Printf(unicastHeader)
+		_printIps(unicasts)
+	}
+
+	/* print multicast addresses */
+	if len(multicasts) > 0 {
+		fmt.Printf(multicastHeader)
+		_printIps(multicasts)
+	}
 }
 
 /* print device table periodically */
@@ -645,8 +734,6 @@ func printDevices() {
 		"===================================" +
 		"===================================\n"
 	macFmt := "MAC: %-43s (age: %.f, pkts: %d)\n"
-	vlanFmt := "    VLAN: %-38d (age: %.f, pkts: %d)\n"
-	ipFmt := "    IP: %-40s (age: %.f, pkts: %d)\n"
 	for {
 		/* start with devices header */
 		fmt.Printf(devicesFmt, len(devices), packets)
@@ -654,32 +741,9 @@ func printDevices() {
 			/* print MAC address */
 			fmt.Printf(macFmt, mac, device.getAge(),
 				device.packets)
-			if device.bridge {
-				/* print bridge info */
-				printBridge(device)
-			}
-			if device.dhcp {
-				/* print dhcp info */
-				printDhcp(device)
-			}
-			if device.router {
-				/* print router info */
-				printRouter(device)
-			}
-			if device.powerline {
-				/* print powerline info */
-				printPowerline(device)
-			}
-			for _, vlan := range device.vlans {
-				/* print VLAN info */
-				fmt.Printf(vlanFmt, vlan.vlan, vlan.getAge(),
-					vlan.packets)
-			}
-			for ip, info := range device.ips {
-				/* print IP address info */
-				fmt.Printf(ipFmt, ip, info.getAge(),
-					info.packets)
-			}
+			/* print properties and ips */
+			printProperties(device)
+			printIps(device)
 			fmt.Println()
 		}
 		time.Sleep(5 * time.Second)
