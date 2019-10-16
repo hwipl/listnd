@@ -67,6 +67,12 @@ type powerlineInfo struct {
 	timestamp time.Time
 }
 
+/* struct for dhcp information */
+type dhcpInfo struct {
+	dhcp      bool
+	timestamp time.Time
+}
+
 /* struct for devices found on the network */
 type deviceInfo struct {
 	mac       gopacket.Endpoint
@@ -74,7 +80,7 @@ type deviceInfo struct {
 	vlans     map[uint16]*vlanInfo
 	powerline *powerlineInfo
 	bridge    bool
-	dhcp      bool
+	dhcp      *dhcpInfo
 	router    *routerInfo
 	packets   int
 	ips       map[gopacket.Endpoint]*ipInfo
@@ -176,6 +182,21 @@ func (p *powerlineInfo) getAge() float64 {
 	return time.Since(p.timestamp).Seconds()
 }
 
+/* add or update timestamp of dhcp info */
+func (d *dhcpInfo) addTimestamp(timestamp time.Time) {
+	d.timestamp = timestamp
+}
+
+/* get seconds since dhcp info was last updated */
+func (d *dhcpInfo) getAge() float64 {
+	var zero time.Time
+
+	if d.timestamp == zero {
+		return -1
+	}
+	return time.Since(d.timestamp).Seconds()
+}
+
 /* add a vlan to a device */
 func (d *deviceInfo) addVlan(vlanID uint16) {
 	/* add entry if it does not exist */
@@ -267,6 +288,26 @@ func (d *deviceInfo) setPowerline(enable bool) {
 /* check if device is powerline capable */
 func (d *deviceInfo) isPowerline() bool {
 	if d.powerline != nil && d.powerline.powerline {
+		return true
+	}
+	return false
+}
+
+/* set/update dhcp info of a device */
+func (d *deviceInfo) setDhcp(enable bool) {
+	if d.dhcp == nil {
+		if !enable {
+			return
+		}
+		dhcp := dhcpInfo{}
+		d.dhcp = &dhcp
+	}
+	d.dhcp.dhcp = enable
+}
+
+/* check if device is dhcp capable */
+func (d *deviceInfo) isDhcp() bool {
+	if d.dhcp != nil && d.dhcp.dhcp {
 		return true
 	}
 	return false
@@ -641,7 +682,9 @@ func parseDhcp(packet gopacket.Packet) {
 		if dhcp.Operation == layers.DHCPOpReply {
 			debug("DHCP Reply")
 			/* mark this device as dhcp server */
-			devices[linkSrc].dhcp = true
+			devices[linkSrc].setDhcp(true)
+			devices[linkSrc].dhcp.addTimestamp(
+				packet.Metadata().Timestamp)
 		}
 	}
 
@@ -652,6 +695,7 @@ func parseDhcp(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		devices[linkSrc].addIP(netSrc)
+		timestamp := packet.Metadata().Timestamp
 
 		/* parse message type to determine if server or client */
 		switch dhcp.MsgType {
@@ -661,7 +705,9 @@ func parseDhcp(packet gopacket.Packet) {
 			debug("DHCPv6 Advertise")
 		case layers.DHCPv6MsgTypeRequest:
 			debug("DHCPv6 Request")
-			devices[linkSrc].dhcp = true
+			/* server */
+			devices[linkSrc].setDhcp(true)
+			devices[linkSrc].dhcp.addTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeConfirm:
 			debug("DHCPv6 Confirm")
 		case layers.DHCPv6MsgTypeRenew:
@@ -670,21 +716,27 @@ func parseDhcp(packet gopacket.Packet) {
 			debug("DHCPv6 Rebind")
 		case layers.DHCPv6MsgTypeReply:
 			debug("DHCPv6 Reply")
-			devices[linkSrc].dhcp = true
+			/* server */
+			devices[linkSrc].setDhcp(true)
+			devices[linkSrc].dhcp.addTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeRelease:
 			debug("DHCPv6 Release")
 		case layers.DHCPv6MsgTypeDecline:
 			debug("DHCPv6 Decline")
 		case layers.DHCPv6MsgTypeReconfigure:
 			debug("DHCPv6 Reconfigure")
-			devices[linkSrc].dhcp = true
+			/* server */
+			devices[linkSrc].setDhcp(true)
+			devices[linkSrc].dhcp.addTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeInformationRequest:
 			debug("DHCPv6 Information Request")
 		case layers.DHCPv6MsgTypeRelayForward:
 			debug("DHCPv6 Relay Forward")
 		case layers.DHCPv6MsgTypeRelayReply:
 			debug("DHCPv6 Relay Reply")
-			devices[linkSrc].dhcp = true
+			/* server */
+			devices[linkSrc].setDhcp(true)
+			devices[linkSrc].dhcp.addTimestamp(timestamp)
 		}
 	}
 }
@@ -752,12 +804,13 @@ func printRouter(device *deviceInfo) {
 
 /* print dhcp information in device table */
 func printDhcp(device *deviceInfo) {
-	dhcpHeader := "    DHCP: server\n"
+	dhcpFmt := "    DHCP: %-38s (age: %.f)\n"
+	dhcpRole := "server"
 
-	if !device.dhcp {
+	if !device.isDhcp() {
 		return
 	}
-	fmt.Printf(dhcpHeader)
+	fmt.Printf(dhcpFmt, dhcpRole, device.dhcp.getAge())
 }
 
 /* print bridge information in device table */
@@ -809,7 +862,7 @@ func printProperties(device *deviceInfo) {
 
 	/* make sure any properties are present */
 	if !device.bridge &&
-		!device.dhcp &&
+		!device.isDhcp() &&
 		!device.isRouter() &&
 		!device.isPowerline() &&
 		len(device.vlans) == 0 {
