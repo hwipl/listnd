@@ -607,7 +607,7 @@ func printDevices() {
 		"Devices: %-39d (pkts: %d)\n" +
 		"===================================" +
 		"===================================\n"
-	macFmt := "MAC: %-43s (age: %.fs)\n"
+	macFmt := "MAC: %-43s (age: %.f, pkts: %d)\n"
 	vlanFmt := "    VLAN: %d\n"
 	ipFmt := "    IP: %-40s (%d pkts)\n"
 	for {
@@ -615,7 +615,8 @@ func printDevices() {
 		fmt.Printf(devicesFmt, len(devices), packets)
 		for mac, device := range devices {
 			/* print MAC address */
-			fmt.Printf(macFmt, mac, device.getAge())
+			fmt.Printf(macFmt, mac, device.getAge(),
+				device.packets)
 			if device.bridge {
 				/* print bridge info */
 				printBridge(device)
