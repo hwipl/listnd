@@ -61,12 +61,18 @@ type prefixInfo struct {
 	timestamp time.Time
 }
 
+/* struct for powerline information */
+type powerlineInfo struct {
+	powerline bool
+	timestamp time.Time
+}
+
 /* struct for devices found on the network */
 type deviceInfo struct {
 	mac       gopacket.Endpoint
 	timestamp time.Time
 	vlans     map[uint16]*vlanInfo
-	powerline bool
+	powerline *powerlineInfo
 	bridge    bool
 	dhcp      bool
 	router    *routerInfo
@@ -155,6 +161,21 @@ func (p *prefixInfo) getAge() float64 {
 	return time.Since(p.timestamp).Seconds()
 }
 
+/* add or update timestamp of prefix info */
+func (p *powerlineInfo) addTimestamp(timestamp time.Time) {
+	p.timestamp = timestamp
+}
+
+/* get seconds since prefix info was last updated */
+func (p *powerlineInfo) getAge() float64 {
+	var zero time.Time
+
+	if p.timestamp == zero {
+		return -1
+	}
+	return time.Since(p.timestamp).Seconds()
+}
+
 /* add a vlan to a device */
 func (d *deviceInfo) addVlan(vlanID uint16) {
 	/* add entry if it does not exist */
@@ -226,6 +247,26 @@ func (d *deviceInfo) setRouter(enable bool) {
 /* check if device is a router */
 func (d *deviceInfo) isRouter() bool {
 	if d.router != nil && d.router.router {
+		return true
+	}
+	return false
+}
+
+/* set/update powerline info of a device */
+func (d *deviceInfo) setPowerline(enable bool) {
+	if d.powerline == nil {
+		if !enable {
+			return
+		}
+		powerline := powerlineInfo{}
+		d.powerline = &powerline
+	}
+	d.powerline.powerline = enable
+}
+
+/* check if device is powerline capable */
+func (d *deviceInfo) isPowerline() bool {
+	if d.powerline != nil && d.powerline.powerline {
 		return true
 	}
 	return false
@@ -672,7 +713,9 @@ func parsePlc(packet gopacket.Packet) {
 
 			/* add device and mark this device as a powerline */
 			devices.add(linkSrc)
-			devices[linkSrc].powerline = true
+			devices[linkSrc].setPowerline(true)
+			devices[linkSrc].powerline.addTimestamp(
+				packet.Metadata().Timestamp)
 		}
 	}
 }
@@ -729,12 +772,13 @@ func printBridge(device *deviceInfo) {
 
 /* print powerline information in device table */
 func printPowerline(device *deviceInfo) {
-	powerlineHeader := "    Powerline: true\n"
+	powerlineFmt := "    Powerline: %-33t (age: %.f)\n"
 
-	if !device.powerline {
+	if !device.isPowerline() {
 		return
 	}
-	fmt.Printf(powerlineHeader)
+	fmt.Printf(powerlineFmt, device.isPowerline(),
+		device.powerline.getAge())
 }
 
 /* print vlan information in device table */
@@ -767,7 +811,7 @@ func printProperties(device *deviceInfo) {
 	if !device.bridge &&
 		!device.dhcp &&
 		!device.isRouter() &&
-		!device.powerline &&
+		!device.isPowerline() &&
 		len(device.vlans) == 0 {
 		return
 	}
