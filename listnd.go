@@ -42,8 +42,9 @@ type vlanInfo struct {
 
 /* struct for ip addresses of devices on the network */
 type ipInfo struct {
-	ip      gopacket.Endpoint
-	packets int
+	ip        gopacket.Endpoint
+	timestamp time.Time
+	packets   int
 }
 
 /* struct for devices found on the network */
@@ -62,6 +63,21 @@ type deviceInfo struct {
 
 /* device table definition */
 type deviceMap map[gopacket.Endpoint]*deviceInfo
+
+/* add or update timestamp of ip address */
+func (i *ipInfo) addTimestamp(timestamp time.Time) {
+	i.timestamp = timestamp
+}
+
+/* get seconds since ip address was last seen */
+func (i *ipInfo) getAge() float64 {
+	var zero time.Time
+
+	if i.timestamp == zero {
+		return -1
+	}
+	return time.Since(i.timestamp).Seconds()
+}
 
 /* add a vlan to a device */
 func (d *deviceInfo) addVlan(vlanID uint16) {
@@ -190,9 +206,11 @@ func updateCounters(packet gopacket.Packet) {
 	/* increase packet counters */
 	packets++
 	if devices[linkSrc] != nil {
+		timestamp := packet.Metadata().Timestamp
 		devices[linkSrc].packets++
 		if devices[linkSrc].ips[netSrc] != nil {
 			devices[linkSrc].ips[netSrc].packets++
+			devices[linkSrc].ips[netSrc].addTimestamp(timestamp)
 		}
 	}
 	if devices[linkDst] != nil {
@@ -609,7 +627,7 @@ func printDevices() {
 		"===================================\n"
 	macFmt := "MAC: %-43s (age: %.f, pkts: %d)\n"
 	vlanFmt := "    VLAN: %d\n"
-	ipFmt := "    IP: %-40s (%d pkts)\n"
+	ipFmt := "    IP: %-40s (age: %.f, pkts: %d)\n"
 	for {
 		/* start with devices header */
 		fmt.Printf(devicesFmt, len(devices), packets)
@@ -639,7 +657,8 @@ func printDevices() {
 			}
 			for ip, info := range device.ips {
 				/* print IP address info */
-				fmt.Printf(ipFmt, ip, info.packets)
+				fmt.Printf(ipFmt, ip, info.getAge(),
+					info.packets)
 			}
 			fmt.Println()
 		}
