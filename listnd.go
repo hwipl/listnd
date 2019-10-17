@@ -172,21 +172,6 @@ func (d *deviceInfo) delIP(netAddr gopacket.Endpoint) {
 	}
 }
 
-/* add timestamp to a device */
-func (d *deviceInfo) addTimestamp(timestamp time.Time) {
-	d.timestamp = timestamp
-}
-
-/* get seconds since device was last seen */
-func (d *deviceInfo) getAge() float64 {
-	var zero time.Time
-
-	if d.timestamp == zero {
-		return -1
-	}
-	return time.Since(d.timestamp).Seconds()
-}
-
 /* set/update router info of a device */
 func (d *deviceInfo) setRouter(enable bool) {
 	if d.router == nil {
@@ -340,7 +325,7 @@ func updateStatistics(packet gopacket.Packet) {
 	if devices[linkSrc] != nil {
 		timestamp := packet.Metadata().Timestamp
 		devices[linkSrc].packets++
-		devices[linkSrc].addTimestamp(timestamp)
+		devices[linkSrc].setTimestamp(timestamp)
 		if devices[linkSrc].ips[netSrc] != nil {
 			devices[linkSrc].ips[netSrc].packets++
 			devices[linkSrc].ips[netSrc].setTimestamp(timestamp)
