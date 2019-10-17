@@ -34,55 +34,73 @@ var (
  ********************
  */
 
+/* struct for timestamps */
+type timeInfo struct {
+	timestamp time.Time
+}
+
+/* set timestamp */
+func (t *timeInfo) setTimestamp(timestamp time.Time) {
+	t.timestamp = timestamp
+}
+
+/* get seconds since timestamp */
+func (t *timeInfo) getAge() float64 {
+	if t.timestamp == (time.Time{}) {
+		return -1
+	}
+	return time.Since(t.timestamp).Seconds()
+}
+
 /* struct for vlan information */
 type vlanInfo struct {
-	vlan      uint16
-	timestamp time.Time
-	packets   int
+	timeInfo
+	vlan    uint16
+	packets int
 }
 
 /* struct for ip addresses of devices on the network */
 type ipInfo struct {
-	ip        gopacket.Endpoint
-	timestamp time.Time
-	packets   int
+	timeInfo
+	ip      gopacket.Endpoint
+	packets int
 }
 
 /* struct for router information of devices on the network */
 type routerInfo struct {
-	router    bool
-	prefixes  []*prefixInfo
-	timestamp time.Time
+	timeInfo
+	router   bool
+	prefixes []*prefixInfo
 }
 
 /* struct for router's prefix information */
 type prefixInfo struct {
-	prefix    layers.ICMPv6Option
-	timestamp time.Time
+	timeInfo
+	prefix layers.ICMPv6Option
 }
 
 /* struct for powerline information */
 type powerlineInfo struct {
+	timeInfo
 	powerline bool
-	timestamp time.Time
 }
 
 /* struct for dhcp information */
 type dhcpInfo struct {
-	dhcp      bool
-	timestamp time.Time
+	timeInfo
+	dhcp bool
 }
 
 /* struct for bridge information */
 type bridgeInfo struct {
-	bridge    bool
-	timestamp time.Time
+	timeInfo
+	bridge bool
 }
 
 /* struct for devices found on the network */
 type deviceInfo struct {
+	timeInfo
 	mac       gopacket.Endpoint
-	timestamp time.Time
 	vlans     map[uint16]*vlanInfo
 	powerline *powerlineInfo
 	bridge    *bridgeInfo
@@ -94,36 +112,6 @@ type deviceInfo struct {
 
 /* device table definition */
 type deviceMap map[gopacket.Endpoint]*deviceInfo
-
-/* add or update timestamp of vlan tag */
-func (v *vlanInfo) addTimestamp(timestamp time.Time) {
-	v.timestamp = timestamp
-}
-
-/* get seconds since vlan tag was last seen */
-func (v *vlanInfo) getAge() float64 {
-	var zero time.Time
-
-	if v.timestamp == zero {
-		return -1
-	}
-	return time.Since(v.timestamp).Seconds()
-}
-
-/* add or update timestamp of ip address */
-func (i *ipInfo) addTimestamp(timestamp time.Time) {
-	i.timestamp = timestamp
-}
-
-/* get seconds since ip address was last seen */
-func (i *ipInfo) getAge() float64 {
-	var zero time.Time
-
-	if i.timestamp == zero {
-		return -1
-	}
-	return time.Since(i.timestamp).Seconds()
-}
 
 /* clear prefixes in router info */
 func (r *routerInfo) clearPrefixes() {
@@ -141,81 +129,6 @@ func (r *routerInfo) addPrefix(prefix layers.ICMPv6Option) *prefixInfo {
 /* get prefixes from router info */
 func (r *routerInfo) getPrefixes() []*prefixInfo {
 	return r.prefixes
-}
-
-/* add or update timestamp of router info */
-func (r *routerInfo) addTimestamp(timestamp time.Time) {
-	r.timestamp = timestamp
-}
-
-/* get seconds since router info was last updated */
-func (r *routerInfo) getAge() float64 {
-	var zero time.Time
-
-	if r.timestamp == zero {
-		return -1
-	}
-	return time.Since(r.timestamp).Seconds()
-}
-
-/* add or update timestamp of prefix info */
-func (p *prefixInfo) addTimestamp(timestamp time.Time) {
-	p.timestamp = timestamp
-}
-
-/* get seconds since prefix info was last updated */
-func (p *prefixInfo) getAge() float64 {
-	var zero time.Time
-
-	if p.timestamp == zero {
-		return -1
-	}
-	return time.Since(p.timestamp).Seconds()
-}
-
-/* add or update timestamp of prefix info */
-func (p *powerlineInfo) addTimestamp(timestamp time.Time) {
-	p.timestamp = timestamp
-}
-
-/* get seconds since prefix info was last updated */
-func (p *powerlineInfo) getAge() float64 {
-	var zero time.Time
-
-	if p.timestamp == zero {
-		return -1
-	}
-	return time.Since(p.timestamp).Seconds()
-}
-
-/* add or update timestamp of dhcp info */
-func (d *dhcpInfo) addTimestamp(timestamp time.Time) {
-	d.timestamp = timestamp
-}
-
-/* get seconds since dhcp info was last updated */
-func (d *dhcpInfo) getAge() float64 {
-	var zero time.Time
-
-	if d.timestamp == zero {
-		return -1
-	}
-	return time.Since(d.timestamp).Seconds()
-}
-
-/* add or update timestamp of bridge info */
-func (b *bridgeInfo) addTimestamp(timestamp time.Time) {
-	b.timestamp = timestamp
-}
-
-/* get seconds since bridge info was last updated */
-func (b *bridgeInfo) getAge() float64 {
-	var zero time.Time
-
-	if b.timestamp == zero {
-		return -1
-	}
-	return time.Since(b.timestamp).Seconds()
 }
 
 /* add a vlan to a device */
@@ -430,7 +343,7 @@ func updateStatistics(packet gopacket.Packet) {
 		devices[linkSrc].addTimestamp(timestamp)
 		if devices[linkSrc].ips[netSrc] != nil {
 			devices[linkSrc].ips[netSrc].packets++
-			devices[linkSrc].ips[netSrc].addTimestamp(timestamp)
+			devices[linkSrc].ips[netSrc].setTimestamp(timestamp)
 		}
 	}
 }
@@ -449,7 +362,7 @@ func parseVlan(packet gopacket.Packet) {
 		vlan, _ := vlanLayer.(*layers.Dot1Q)
 		linkSrc, _ := getMacs(packet)
 		devices[linkSrc].addVlan(vlan.VLANIdentifier)
-		devices[linkSrc].vlans[vlan.VLANIdentifier].addTimestamp(
+		devices[linkSrc].vlans[vlan.VLANIdentifier].setTimestamp(
 			packet.Metadata().Timestamp)
 		devices[linkSrc].vlans[vlan.VLANIdentifier].packets++
 	}
@@ -532,7 +445,7 @@ func parseNdp(packet gopacket.Packet) {
 		/* mark device as a router */
 		timestamp := packet.Metadata().Timestamp
 		devices[linkSrc].setRouter(true)
-		devices[linkSrc].router.addTimestamp(timestamp)
+		devices[linkSrc].router.setTimestamp(timestamp)
 
 		/* flush prefixes and refill with advertised ones */
 		adv, _ := radvLayer.(*layers.ICMPv6RouterAdvertisement)
@@ -541,7 +454,7 @@ func parseNdp(packet gopacket.Packet) {
 			if adv.Options[i].Type == layers.ICMPv6OptPrefixInfo {
 				p := devices[linkSrc].router.addPrefix(
 					adv.Options[i])
-				p.addTimestamp(timestamp)
+				p.setTimestamp(timestamp)
 			}
 		}
 		return
@@ -569,7 +482,7 @@ func parseIgmp(packet gopacket.Packet) {
 			debug("IGMPv1or2 Membership Query")
 			/* queries are sent by routers, mark as router */
 			devices[linkSrc].setRouter(true)
-			devices[linkSrc].router.addTimestamp(
+			devices[linkSrc].router.setTimestamp(
 				packet.Metadata().Timestamp)
 		case layers.IGMPMembershipReportV1:
 			debug("IGMPv1 Membership Report")
@@ -595,7 +508,7 @@ func parseIgmp(packet gopacket.Packet) {
 			debug("IGMPv3 Membership Query")
 			/* queries are sent by routers, mark as router */
 			devices[linkSrc].setRouter(true)
-			devices[linkSrc].router.addTimestamp(
+			devices[linkSrc].router.setTimestamp(
 				packet.Metadata().Timestamp)
 		}
 
@@ -636,7 +549,7 @@ func parseMld(packet gopacket.Packet) {
 		netSrc, _ := getIps(packet)
 		devices[linkSrc].addIP(netSrc)
 		devices[linkSrc].setRouter(true)
-		devices[linkSrc].router.addTimestamp(
+		devices[linkSrc].router.setTimestamp(
 			packet.Metadata().Timestamp)
 		return
 	}
@@ -676,7 +589,7 @@ func parseMld(packet gopacket.Packet) {
 		netSrc, _ := getIps(packet)
 		devices[linkSrc].addIP(netSrc)
 		devices[linkSrc].setRouter(true)
-		devices[linkSrc].router.addTimestamp(
+		devices[linkSrc].router.setTimestamp(
 			packet.Metadata().Timestamp)
 		return
 	}
@@ -724,7 +637,7 @@ func parseDhcp(packet gopacket.Packet) {
 			debug("DHCP Reply")
 			/* mark this device as dhcp server */
 			devices[linkSrc].setDhcp(true)
-			devices[linkSrc].dhcp.addTimestamp(
+			devices[linkSrc].dhcp.setTimestamp(
 				packet.Metadata().Timestamp)
 		}
 	}
@@ -748,7 +661,7 @@ func parseDhcp(packet gopacket.Packet) {
 			debug("DHCPv6 Request")
 			/* server */
 			devices[linkSrc].setDhcp(true)
-			devices[linkSrc].dhcp.addTimestamp(timestamp)
+			devices[linkSrc].dhcp.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeConfirm:
 			debug("DHCPv6 Confirm")
 		case layers.DHCPv6MsgTypeRenew:
@@ -759,7 +672,7 @@ func parseDhcp(packet gopacket.Packet) {
 			debug("DHCPv6 Reply")
 			/* server */
 			devices[linkSrc].setDhcp(true)
-			devices[linkSrc].dhcp.addTimestamp(timestamp)
+			devices[linkSrc].dhcp.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeRelease:
 			debug("DHCPv6 Release")
 		case layers.DHCPv6MsgTypeDecline:
@@ -768,7 +681,7 @@ func parseDhcp(packet gopacket.Packet) {
 			debug("DHCPv6 Reconfigure")
 			/* server */
 			devices[linkSrc].setDhcp(true)
-			devices[linkSrc].dhcp.addTimestamp(timestamp)
+			devices[linkSrc].dhcp.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeInformationRequest:
 			debug("DHCPv6 Information Request")
 		case layers.DHCPv6MsgTypeRelayForward:
@@ -777,7 +690,7 @@ func parseDhcp(packet gopacket.Packet) {
 			debug("DHCPv6 Relay Reply")
 			/* server */
 			devices[linkSrc].setDhcp(true)
-			devices[linkSrc].dhcp.addTimestamp(timestamp)
+			devices[linkSrc].dhcp.setTimestamp(timestamp)
 		}
 	}
 }
@@ -792,7 +705,7 @@ func parseStp(packet gopacket.Packet) {
 		/* add device and mark this device as a bridge */
 		devices.add(linkSrc)
 		devices[linkSrc].setBridge(true)
-		devices[linkSrc].bridge.addTimestamp(
+		devices[linkSrc].bridge.setTimestamp(
 			packet.Metadata().Timestamp)
 	}
 }
@@ -809,7 +722,7 @@ func parsePlc(packet gopacket.Packet) {
 			/* add device and mark this device as a powerline */
 			devices.add(linkSrc)
 			devices[linkSrc].setPowerline(true)
-			devices[linkSrc].powerline.addTimestamp(
+			devices[linkSrc].powerline.setTimestamp(
 				packet.Metadata().Timestamp)
 		}
 	}
