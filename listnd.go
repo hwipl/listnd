@@ -52,6 +52,29 @@ func (t *timeInfo) getAge() float64 {
 	return time.Since(t.timestamp).Seconds()
 }
 
+/* struct for device properties */
+type propInfo struct {
+	enabled bool
+}
+
+/* enable device property */
+func (p *propInfo) enable() {
+	p.enabled = true
+}
+
+/* disable device property */
+func (p *propInfo) disable() {
+	p.enabled = false
+}
+
+/* check if device property is enabled */
+func (p *propInfo) isEnabled() bool {
+	if p != nil && p.enabled {
+		return true
+	}
+	return false
+}
+
 /* struct for vlan information */
 type vlanInfo struct {
 	timeInfo
@@ -68,8 +91,8 @@ type ipInfo struct {
 
 /* struct for router information of devices on the network */
 type routerInfo struct {
+	propInfo
 	timeInfo
-	router   bool
 	prefixes []*prefixInfo
 }
 
@@ -81,20 +104,20 @@ type prefixInfo struct {
 
 /* struct for powerline information */
 type powerlineInfo struct {
+	propInfo
 	timeInfo
-	powerline bool
 }
 
 /* struct for dhcp information */
 type dhcpInfo struct {
+	propInfo
 	timeInfo
-	dhcp bool
 }
 
 /* struct for bridge information */
 type bridgeInfo struct {
+	propInfo
 	timeInfo
-	bridge bool
 }
 
 /* struct for devices found on the network */
@@ -102,10 +125,10 @@ type deviceInfo struct {
 	timeInfo
 	mac       gopacket.Endpoint
 	vlans     map[uint16]*vlanInfo
-	powerline *powerlineInfo
-	bridge    *bridgeInfo
-	dhcp      *dhcpInfo
-	router    *routerInfo
+	powerline powerlineInfo
+	bridge    bridgeInfo
+	dhcp      dhcpInfo
+	router    routerInfo
 	packets   int
 	ips       map[gopacket.Endpoint]*ipInfo
 }
@@ -170,86 +193,6 @@ func (d *deviceInfo) delIP(netAddr gopacket.Endpoint) {
 		debug("Deleting ip from an entry")
 		delete(d.ips, netAddr)
 	}
-}
-
-/* set/update router info of a device */
-func (d *deviceInfo) setRouter(enable bool) {
-	if d.router == nil {
-		if !enable {
-			return
-		}
-		router := routerInfo{}
-		d.router = &router
-	}
-	d.router.router = enable
-}
-
-/* check if device is a router */
-func (d *deviceInfo) isRouter() bool {
-	if d.router != nil && d.router.router {
-		return true
-	}
-	return false
-}
-
-/* set/update powerline info of a device */
-func (d *deviceInfo) setPowerline(enable bool) {
-	if d.powerline == nil {
-		if !enable {
-			return
-		}
-		powerline := powerlineInfo{}
-		d.powerline = &powerline
-	}
-	d.powerline.powerline = enable
-}
-
-/* check if device is powerline capable */
-func (d *deviceInfo) isPowerline() bool {
-	if d.powerline != nil && d.powerline.powerline {
-		return true
-	}
-	return false
-}
-
-/* set/update dhcp info of a device */
-func (d *deviceInfo) setDhcp(enable bool) {
-	if d.dhcp == nil {
-		if !enable {
-			return
-		}
-		dhcp := dhcpInfo{}
-		d.dhcp = &dhcp
-	}
-	d.dhcp.dhcp = enable
-}
-
-/* check if device is dhcp capable */
-func (d *deviceInfo) isDhcp() bool {
-	if d.dhcp != nil && d.dhcp.dhcp {
-		return true
-	}
-	return false
-}
-
-/* set/update bridge info of a device */
-func (d *deviceInfo) setBridge(enable bool) {
-	if d.bridge == nil {
-		if !enable {
-			return
-		}
-		bridge := bridgeInfo{}
-		d.bridge = &bridge
-	}
-	d.bridge.bridge = enable
-}
-
-/* check if device is a bridge */
-func (d *deviceInfo) isBridge() bool {
-	if d.bridge != nil && d.bridge.bridge {
-		return true
-	}
-	return false
 }
 
 /* add a device to the device table */
@@ -429,7 +372,7 @@ func parseNdp(packet gopacket.Packet) {
 
 		/* mark device as a router */
 		timestamp := packet.Metadata().Timestamp
-		devices[linkSrc].setRouter(true)
+		devices[linkSrc].router.enable()
 		devices[linkSrc].router.setTimestamp(timestamp)
 
 		/* flush prefixes and refill with advertised ones */
@@ -466,7 +409,7 @@ func parseIgmp(packet gopacket.Packet) {
 		case layers.IGMPMembershipQuery:
 			debug("IGMPv1or2 Membership Query")
 			/* queries are sent by routers, mark as router */
-			devices[linkSrc].setRouter(true)
+			devices[linkSrc].router.enable()
 			devices[linkSrc].router.setTimestamp(
 				packet.Metadata().Timestamp)
 		case layers.IGMPMembershipReportV1:
@@ -492,7 +435,7 @@ func parseIgmp(packet gopacket.Packet) {
 		if igmp.Type == layers.IGMPMembershipQuery {
 			debug("IGMPv3 Membership Query")
 			/* queries are sent by routers, mark as router */
-			devices[linkSrc].setRouter(true)
+			devices[linkSrc].router.enable()
 			devices[linkSrc].router.setTimestamp(
 				packet.Metadata().Timestamp)
 		}
@@ -533,7 +476,7 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		devices[linkSrc].addIP(netSrc)
-		devices[linkSrc].setRouter(true)
+		devices[linkSrc].router.enable()
 		devices[linkSrc].router.setTimestamp(
 			packet.Metadata().Timestamp)
 		return
@@ -573,7 +516,7 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		devices[linkSrc].addIP(netSrc)
-		devices[linkSrc].setRouter(true)
+		devices[linkSrc].router.enable()
 		devices[linkSrc].router.setTimestamp(
 			packet.Metadata().Timestamp)
 		return
@@ -621,7 +564,7 @@ func parseDhcp(packet gopacket.Packet) {
 		if dhcp.Operation == layers.DHCPOpReply {
 			debug("DHCP Reply")
 			/* mark this device as dhcp server */
-			devices[linkSrc].setDhcp(true)
+			devices[linkSrc].dhcp.enable()
 			devices[linkSrc].dhcp.setTimestamp(
 				packet.Metadata().Timestamp)
 		}
@@ -645,7 +588,7 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeRequest:
 			debug("DHCPv6 Request")
 			/* server */
-			devices[linkSrc].setDhcp(true)
+			devices[linkSrc].dhcp.enable()
 			devices[linkSrc].dhcp.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeConfirm:
 			debug("DHCPv6 Confirm")
@@ -656,7 +599,7 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeReply:
 			debug("DHCPv6 Reply")
 			/* server */
-			devices[linkSrc].setDhcp(true)
+			devices[linkSrc].dhcp.enable()
 			devices[linkSrc].dhcp.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeRelease:
 			debug("DHCPv6 Release")
@@ -665,7 +608,7 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeReconfigure:
 			debug("DHCPv6 Reconfigure")
 			/* server */
-			devices[linkSrc].setDhcp(true)
+			devices[linkSrc].dhcp.enable()
 			devices[linkSrc].dhcp.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeInformationRequest:
 			debug("DHCPv6 Information Request")
@@ -674,7 +617,7 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeRelayReply:
 			debug("DHCPv6 Relay Reply")
 			/* server */
-			devices[linkSrc].setDhcp(true)
+			devices[linkSrc].dhcp.enable()
 			devices[linkSrc].dhcp.setTimestamp(timestamp)
 		}
 	}
@@ -689,7 +632,7 @@ func parseStp(packet gopacket.Packet) {
 
 		/* add device and mark this device as a bridge */
 		devices.add(linkSrc)
-		devices[linkSrc].setBridge(true)
+		devices[linkSrc].bridge.enable()
 		devices[linkSrc].bridge.setTimestamp(
 			packet.Metadata().Timestamp)
 	}
@@ -706,7 +649,7 @@ func parsePlc(packet gopacket.Packet) {
 
 			/* add device and mark this device as a powerline */
 			devices.add(linkSrc)
-			devices[linkSrc].setPowerline(true)
+			devices[linkSrc].powerline.enable()
 			devices[linkSrc].powerline.setTimestamp(
 				packet.Metadata().Timestamp)
 		}
@@ -731,10 +674,11 @@ func printRouter(device *deviceInfo) {
 	routerFmt := "    Router: %-36t (age: %.f)\n"
 	prefixFmt := "      Prefix: %-34s (age: %.f)\n"
 
-	if !device.isRouter() {
+	if !device.router.isEnabled() {
 		return
 	}
-	fmt.Printf(routerFmt, device.isRouter(), device.router.getAge())
+	fmt.Printf(routerFmt, device.router.isEnabled(),
+		device.router.getAge())
 	for _, prefix := range device.router.getPrefixes() {
 		pLen := uint8(prefix.prefix.Data[0])
 		p := net.IP(prefix.prefix.Data[14:])
@@ -748,7 +692,7 @@ func printDhcp(device *deviceInfo) {
 	dhcpFmt := "    DHCP: %-38s (age: %.f)\n"
 	dhcpRole := "server"
 
-	if !device.isDhcp() {
+	if !device.dhcp.isEnabled() {
 		return
 	}
 	fmt.Printf(dhcpFmt, dhcpRole, device.dhcp.getAge())
@@ -758,20 +702,21 @@ func printDhcp(device *deviceInfo) {
 func printBridge(device *deviceInfo) {
 	bridgeFmt := "    Bridge: %-36t (age: %.f)\n"
 
-	if !device.isBridge() {
+	if !device.bridge.isEnabled() {
 		return
 	}
-	fmt.Printf(bridgeFmt, device.isBridge(), device.bridge.getAge())
+	fmt.Printf(bridgeFmt, device.bridge.isEnabled(),
+		device.bridge.getAge())
 }
 
 /* print powerline information in device table */
 func printPowerline(device *deviceInfo) {
 	powerlineFmt := "    Powerline: %-33t (age: %.f)\n"
 
-	if !device.isPowerline() {
+	if !device.powerline.isEnabled() {
 		return
 	}
-	fmt.Printf(powerlineFmt, device.isPowerline(),
+	fmt.Printf(powerlineFmt, device.powerline.isEnabled(),
 		device.powerline.getAge())
 }
 
@@ -802,10 +747,10 @@ func printProperties(device *deviceInfo) {
 	propsHeader := "  Properties:\n"
 
 	/* make sure any properties are present */
-	if !device.isBridge() &&
-		!device.isDhcp() &&
-		!device.isRouter() &&
-		!device.isPowerline() &&
+	if !device.bridge.isEnabled() &&
+		!device.dhcp.isEnabled() &&
+		!device.router.isEnabled() &&
+		!device.powerline.isEnabled() &&
 		len(device.vlans) == 0 {
 		return
 	}
