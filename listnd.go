@@ -988,11 +988,11 @@ func printDevices() {
 		"===================================\n"
 	macFmt := "MAC: %-43s (age: %.f, pkts: %d)\n"
 	for {
-		/* start with devices header */
-		fmt.Printf(devicesFmt, len(devices), packets)
-
 		/* lock devices */
 		devicesLock.Lock()
+
+		/* start with devices header */
+		fmt.Printf(devicesFmt, len(devices), packets)
 
 		for mac, device := range devices {
 			/* print MAC address */
