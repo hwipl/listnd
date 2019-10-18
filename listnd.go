@@ -94,6 +94,14 @@ type vxlanInfo struct {
 	packets int
 }
 
+/* struct for vxlan information */
+// TODO: common vnetInfo for vlan, vxlan, geneve?
+type geneveInfo struct {
+	timeInfo
+	geneve  uint32
+	packets int
+}
+
 /* struct for ip addresses of devices on the network */
 type ipInfo struct {
 	timeInfo
@@ -138,6 +146,7 @@ type deviceInfo struct {
 	mac       gopacket.Endpoint
 	vlans     map[uint16]*vlanInfo
 	vxlans    map[uint32]*vxlanInfo
+	geneves   map[uint32]*geneveInfo
 	powerline powerlineInfo
 	bridge    bridgeInfo
 	dhcp      dhcpInfo
@@ -188,6 +197,17 @@ func (d *deviceInfo) addVxlan(vni uint32) {
 		vxlan := vxlanInfo{}
 		vxlan.vxlan = vni
 		d.vxlans[vni] = &vxlan
+	}
+}
+
+/* add a geneve to a device */
+func (d *deviceInfo) addGeneve(vni uint32) {
+	/* add entry if it does not exist */
+	if d.geneves[vni] == nil {
+		debug("Adding new geneve to an entry")
+		geneve := geneveInfo{}
+		geneve.geneve = vni
+		d.geneves[vni] = &geneve
 	}
 }
 
@@ -251,6 +271,7 @@ func (d deviceMap) add(linkAddr gopacket.Endpoint) {
 		device.mac = linkAddr
 		device.vlans = make(map[uint16]*vlanInfo)
 		device.vxlans = make(map[uint32]*vxlanInfo)
+		device.geneves = make(map[uint32]*geneveInfo)
 		device.ips = make(map[gopacket.Endpoint]*ipInfo)
 		device.macPeers = make(map[gopacket.Endpoint]*ipInfo)
 		device.ipPeers = make(map[gopacket.Endpoint]*ipInfo)
@@ -387,6 +408,20 @@ func parseVxlan(packet gopacket.Packet) {
 				packet.Metadata().Timestamp)
 			devices[linkSrc].vxlans[vxlan.VNI].packets++
 		}
+	}
+}
+
+/* parse Geneve header */
+func parseGeneve(packet gopacket.Packet) {
+	geneveLayer := packet.Layer(layers.LayerTypeGeneve)
+	if geneveLayer != nil {
+		debug("Geneve Header")
+		geneve, _ := geneveLayer.(*layers.Geneve)
+		linkSrc, _ := getMacs(packet)
+		devices[linkSrc].addGeneve(geneve.VNI)
+		devices[linkSrc].geneves[geneve.VNI].setTimestamp(
+			packet.Metadata().Timestamp)
+		devices[linkSrc].geneves[geneve.VNI].packets++
 	}
 }
 
@@ -842,6 +877,20 @@ func printVxlans(device *deviceInfo) {
 	}
 }
 
+/* print geneve information in device table */
+func printGeneves(device *deviceInfo) {
+	geneveFmt := "    Geneve: %-36d (age: %.f, pkts: %d)\n"
+
+	if len(device.geneves) == 0 {
+		return
+	}
+	for _, geneve := range device.geneves {
+		/* print VLAN info */
+		fmt.Printf(geneveFmt, geneve.geneve, geneve.getAge(),
+			geneve.packets)
+	}
+}
+
 /* print device properties in device table */
 func printProperties(device *deviceInfo) {
 	propsHeader := "  Properties:\n"
@@ -852,7 +901,8 @@ func printProperties(device *deviceInfo) {
 		!device.router.isEnabled() &&
 		!device.powerline.isEnabled() &&
 		len(device.vlans) == 0 &&
-		len(device.vxlans) == 0 {
+		len(device.vxlans) == 0 &&
+		len(device.geneves) == 0 {
 		return
 	}
 	/* start with header */
@@ -865,6 +915,7 @@ func printProperties(device *deviceInfo) {
 	printPowerline(device)
 	printVlans(device)
 	printVxlans(device)
+	printGeneves(device)
 }
 
 /* print ip information in device table */
@@ -997,6 +1048,7 @@ func listen() {
 		parsePeers(packet)
 		parseVlan(packet)
 		parseVxlan(packet)
+		parseGeneve(packet)
 		parseArp(packet)
 		parseNdp(packet)
 		parseIgmp(packet)
