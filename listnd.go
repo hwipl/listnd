@@ -87,6 +87,13 @@ type vlanInfo struct {
 	packets int
 }
 
+/* struct for vxlan information */
+type vxlanInfo struct {
+	timeInfo
+	vxlan   uint32
+	packets int
+}
+
 /* struct for ip addresses of devices on the network */
 type ipInfo struct {
 	timeInfo
@@ -130,6 +137,7 @@ type deviceInfo struct {
 	timeInfo
 	mac       gopacket.Endpoint
 	vlans     map[uint16]*vlanInfo
+	vxlans    map[uint32]*vxlanInfo
 	powerline powerlineInfo
 	bridge    bridgeInfo
 	dhcp      dhcpInfo
@@ -169,6 +177,17 @@ func (d *deviceInfo) addVlan(vlanID uint16) {
 		vlan := vlanInfo{}
 		vlan.vlan = vlanID
 		d.vlans[vlanID] = &vlan
+	}
+}
+
+/* add a vxlan to a device */
+func (d *deviceInfo) addVxlan(vni uint32) {
+	/* add entry if it does not exist */
+	if d.vxlans[vni] == nil {
+		debug("Adding new vxlan to an entry")
+		vxlan := vxlanInfo{}
+		vxlan.vxlan = vni
+		d.vxlans[vni] = &vxlan
 	}
 }
 
@@ -231,6 +250,7 @@ func (d deviceMap) add(linkAddr gopacket.Endpoint) {
 		device := deviceInfo{}
 		device.mac = linkAddr
 		device.vlans = make(map[uint16]*vlanInfo)
+		device.vxlans = make(map[uint32]*vxlanInfo)
 		device.ips = make(map[gopacket.Endpoint]*ipInfo)
 		device.macPeers = make(map[gopacket.Endpoint]*ipInfo)
 		device.ipPeers = make(map[gopacket.Endpoint]*ipInfo)
@@ -351,6 +371,22 @@ func parseVlan(packet gopacket.Packet) {
 		devices[linkSrc].vlans[vlan.VLANIdentifier].setTimestamp(
 			packet.Metadata().Timestamp)
 		devices[linkSrc].vlans[vlan.VLANIdentifier].packets++
+	}
+}
+
+/* parse VXLAN header */
+func parseVxlan(packet gopacket.Packet) {
+	vxlanLayer := packet.Layer(layers.LayerTypeVXLAN)
+	if vxlanLayer != nil {
+		debug("VXLAN Header")
+		vxlan, _ := vxlanLayer.(*layers.VXLAN)
+		if vxlan.ValidIDFlag {
+			linkSrc, _ := getMacs(packet)
+			devices[linkSrc].addVxlan(vxlan.VNI)
+			devices[linkSrc].vxlans[vxlan.VNI].setTimestamp(
+				packet.Metadata().Timestamp)
+			devices[linkSrc].vxlans[vxlan.VNI].packets++
+		}
 	}
 }
 
@@ -792,6 +828,20 @@ func printVlans(device *deviceInfo) {
 	}
 }
 
+/* print vxlan information in device table */
+func printVxlans(device *deviceInfo) {
+	vxlanFmt := "    VXLAN: %-37d (age: %.f, pkts: %d)\n"
+
+	if len(device.vxlans) == 0 {
+		return
+	}
+	for _, vxlan := range device.vxlans {
+		/* print VLAN info */
+		fmt.Printf(vxlanFmt, vxlan.vxlan, vxlan.getAge(),
+			vxlan.packets)
+	}
+}
+
 /* print device properties in device table */
 func printProperties(device *deviceInfo) {
 	propsHeader := "  Properties:\n"
@@ -801,7 +851,8 @@ func printProperties(device *deviceInfo) {
 		!device.dhcp.isEnabled() &&
 		!device.router.isEnabled() &&
 		!device.powerline.isEnabled() &&
-		len(device.vlans) == 0 {
+		len(device.vlans) == 0 &&
+		len(device.vxlans) == 0 {
 		return
 	}
 	/* start with header */
@@ -813,6 +864,7 @@ func printProperties(device *deviceInfo) {
 	printRouter(device)
 	printPowerline(device)
 	printVlans(device)
+	printVxlans(device)
 }
 
 /* print ip information in device table */
@@ -944,6 +996,7 @@ func listen() {
 		parseSrcMac(packet)
 		parsePeers(packet)
 		parseVlan(packet)
+		parseVxlan(packet)
 		parseArp(packet)
 		parseNdp(packet)
 		parseIgmp(packet)
