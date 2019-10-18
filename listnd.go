@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/google/gopacket"
@@ -15,9 +16,10 @@ import (
 /* variable definitions */
 var (
 	/* network device map and debugging mode */
-	packets   int
-	devices        = make(deviceMap)
-	debugMode bool = false
+	packets     int
+	devicesLock      = &sync.Mutex{}
+	devices          = make(deviceMap)
+	debugMode   bool = false
 
 	/* pcap settings */
 	pcapPromisc bool   = true
@@ -805,6 +807,10 @@ func printDevices() {
 	for {
 		/* start with devices header */
 		fmt.Printf(devicesFmt, len(devices), packets)
+
+		/* lock devices */
+		devicesLock.Lock()
+
 		for mac, device := range devices {
 			/* print MAC address */
 			fmt.Printf(macFmt, mac, device.getAge(),
@@ -814,6 +820,11 @@ func printDevices() {
 			printIps(device)
 			fmt.Println()
 		}
+
+		/* unlock devices */
+		devicesLock.Unlock()
+
+		/* wait 5 seconds before printing */
 		time.Sleep(5 * time.Second)
 	}
 }
@@ -845,6 +856,9 @@ func listen() {
 	packetSource := gopacket.NewPacketSource(pcapHandle,
 		pcapHandle.LinkType())
 	for packet := range packetSource.Packets() {
+		/* lock devices */
+		devicesLock.Lock()
+
 		/* parse packet */
 		parseSrcMac(packet)
 		parseVlan(packet)
@@ -856,6 +870,9 @@ func listen() {
 		parseStp(packet)
 		parsePlc(packet)
 		updateStatistics(packet)
+
+		/* unlock devices */
+		devicesLock.Unlock()
 	}
 }
 
