@@ -15,11 +15,10 @@ import (
 
 /* variable definitions */
 var (
-	/* network device map and debugging mode */
+	/* network device map */
 	packets     int
-	devicesLock      = &sync.Mutex{}
-	devices          = make(deviceMap)
-	debugMode   bool = false
+	devicesLock = &sync.Mutex{}
+	devices     = make(deviceMap)
 
 	/* pcap settings */
 	pcapPromisc bool   = true
@@ -28,6 +27,10 @@ var (
 	pcapTimeout int    = 1
 	pcapHandle  *pcap.Handle
 	pcapErr     error
+
+	/* parsing/output settings */
+	debugMode bool = false
+	withPeers bool = false
 )
 
 /*
@@ -133,6 +136,8 @@ type deviceInfo struct {
 	router    routerInfo
 	packets   int
 	ips       map[gopacket.Endpoint]*ipInfo
+	macPeers  map[gopacket.Endpoint]*ipInfo
+	ipPeers   map[gopacket.Endpoint]*ipInfo
 }
 
 /* device table definition */
@@ -197,6 +202,27 @@ func (d *deviceInfo) delIP(netAddr gopacket.Endpoint) {
 	}
 }
 
+/* add a peer address to a device */
+func (d *deviceInfo) addPeer(addr gopacket.Endpoint) {
+	switch addr.EndpointType() {
+	case layers.EndpointMAC:
+		if d.macPeers[addr] == nil {
+			debug("Adding new mac peer to an entry")
+			// TODO: rename to addrInfo? add macInfo?
+			ip := ipInfo{}
+			ip.ip = addr
+			d.macPeers[addr] = &ip
+		}
+	case layers.EndpointIPv4, layers.EndpointIPv6:
+		if d.ipPeers[addr] == nil {
+			debug("Adding new ip peer to an entry")
+			ip := ipInfo{}
+			ip.ip = addr
+			d.ipPeers[addr] = &ip
+		}
+	}
+}
+
 /* add a device to the device table */
 func (d deviceMap) add(linkAddr gopacket.Endpoint) {
 	/* create table entries if necessary */
@@ -206,6 +232,8 @@ func (d deviceMap) add(linkAddr gopacket.Endpoint) {
 		device.mac = linkAddr
 		device.vlans = make(map[uint16]*vlanInfo)
 		device.ips = make(map[gopacket.Endpoint]*ipInfo)
+		device.macPeers = make(map[gopacket.Endpoint]*ipInfo)
+		device.ipPeers = make(map[gopacket.Endpoint]*ipInfo)
 		d[linkAddr] = &device
 	}
 }
@@ -262,18 +290,34 @@ func getIps(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
 /* update statistics */
 func updateStatistics(packet gopacket.Packet) {
 	/* get addresses */
-	linkSrc, _ := getMacs(packet)
-	netSrc, _ := getIps(packet)
+	linkSrc, linkDst := getMacs(packet)
+	netSrc, netDst := getIps(packet)
 
 	/* increase packet counters */
 	packets++
-	if devices[linkSrc] != nil {
+	if device := devices[linkSrc]; device != nil {
 		timestamp := packet.Metadata().Timestamp
-		devices[linkSrc].packets++
-		devices[linkSrc].setTimestamp(timestamp)
-		if devices[linkSrc].ips[netSrc] != nil {
-			devices[linkSrc].ips[netSrc].packets++
-			devices[linkSrc].ips[netSrc].setTimestamp(timestamp)
+
+		/* mac/device */
+		device.packets++
+		device.setTimestamp(timestamp)
+
+		/* ip */
+		if ip := device.ips[netSrc]; ip != nil {
+			ip.packets++
+			ip.setTimestamp(timestamp)
+		}
+
+		/* mac peers */
+		if peer := device.macPeers[linkDst]; peer != nil {
+			peer.packets++
+			peer.setTimestamp(timestamp)
+		}
+
+		/* ip peers */
+		if peer := device.ipPeers[netDst]; peer != nil {
+			peer.packets++
+			peer.setTimestamp(timestamp)
 		}
 	}
 }
@@ -282,6 +326,18 @@ func updateStatistics(packet gopacket.Packet) {
 func parseSrcMac(packet gopacket.Packet) {
 	linkSrc, _ := getMacs(packet)
 	devices.add(linkSrc)
+}
+
+/* parse peer addresses and add them to device table */
+func parsePeers(packet gopacket.Packet) {
+	if !withPeers {
+		return
+	}
+	linkSrc, linkDst := getMacs(packet)
+	_, netDst := getIps(packet)
+
+	devices[linkSrc].addPeer(linkDst)
+	devices[linkSrc].addPeer(netDst)
 }
 
 /* parse VLAN tags */
@@ -736,14 +792,6 @@ func printVlans(device *deviceInfo) {
 	}
 }
 
-/* print ip information in device table */
-func _printIps(ips []*ipInfo) {
-	ipFmt := "    IP: %-40s (age: %.f, pkts: %d)\n"
-	for _, info := range ips {
-		fmt.Printf(ipFmt, info.ip, info.getAge(), info.packets)
-	}
-}
-
 /* print device properties in device table */
 func printProperties(device *deviceInfo) {
 	propsHeader := "  Properties:\n"
@@ -765,6 +813,14 @@ func printProperties(device *deviceInfo) {
 	printRouter(device)
 	printPowerline(device)
 	printVlans(device)
+}
+
+/* print ip information in device table */
+func _printIps(ips []*ipInfo) {
+	ipFmt := "    IP: %-40s (age: %.f, pkts: %d)\n"
+	for _, info := range ips {
+		fmt.Printf(ipFmt, info.ip, info.getAge(), info.packets)
+	}
 }
 
 /* print ip addresses in device table */
@@ -796,6 +852,30 @@ func printIps(device *deviceInfo) {
 	}
 }
 
+/* print peer addresses in device table */
+func printPeers(device *deviceInfo) {
+	macPeersHeader := "  MAC Peers:\n"
+	ipPeersHeader := "  IP Peers:\n"
+
+	if len(device.macPeers) > 0 {
+		var macs []*ipInfo
+		for _, info := range device.macPeers {
+			macs = append(macs, info)
+		}
+		fmt.Printf(macPeersHeader)
+		_printIps(macs)
+	}
+
+	if len(device.ipPeers) > 0 {
+		var ips []*ipInfo
+		for _, info := range device.ipPeers {
+			ips = append(ips, info)
+		}
+		fmt.Printf(ipPeersHeader)
+		_printIps(ips)
+	}
+}
+
 /* print device table periodically */
 func printDevices() {
 	devicesFmt := "===================================" +
@@ -818,6 +898,7 @@ func printDevices() {
 			/* print properties and ips */
 			printProperties(device)
 			printIps(device)
+			printPeers(device)
 			fmt.Println()
 		}
 
@@ -861,6 +942,7 @@ func listen() {
 
 		/* parse packet */
 		parseSrcMac(packet)
+		parsePeers(packet)
 		parseVlan(packet)
 		parseArp(packet)
 		parseNdp(packet)
@@ -888,6 +970,7 @@ func parseCommandLine() {
 	flag.IntVar(&pcapSnaplen, "pcap-snaplen", pcapSnaplen,
 		"Set pcap snapshot length parameter in bytes")
 	flag.BoolVar(&debugMode, "debug", debugMode, "debugging mode")
+	flag.BoolVar(&withPeers, "peers", withPeers, "show peers")
 
 	/* parse and overwrite default values of settings */
 	flag.Parse()
@@ -898,6 +981,7 @@ func parseCommandLine() {
 	debug(fmt.Sprintf("Pcap Timeout: %d", pcapTimeout))
 	debug(fmt.Sprintf("Pcap Snaplen: %d", pcapSnaplen))
 	debug(fmt.Sprintf("Debugging Output: %t", debugMode))
+	debug(fmt.Sprintf("Peers Output: %t", withPeers))
 }
 
 /* main function */
