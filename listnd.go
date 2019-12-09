@@ -3,8 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net"
+	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -31,6 +34,9 @@ var (
 	/* parsing/output settings */
 	debugMode bool = false
 	withPeers bool = false
+
+	// http
+	httpListen string = ""
 )
 
 /*
@@ -798,59 +804,59 @@ func debug(text string) {
 	}
 }
 
-/* print router information in device table */
-func printRouter(device *deviceInfo) {
+// printRouter prints router information in device table
+func printRouter(w io.Writer, device *deviceInfo) {
 	routerFmt := "    Router: %-36t (age: %.f)\n"
 	prefixFmt := "      Prefix: %-34s (age: %.f)\n"
 
 	if !device.router.isEnabled() {
 		return
 	}
-	fmt.Printf(routerFmt, device.router.isEnabled(),
+	fmt.Fprintf(w, routerFmt, device.router.isEnabled(),
 		device.router.getAge())
 	for _, prefix := range device.router.getPrefixes() {
 		pLen := uint8(prefix.prefix.Data[0])
 		p := net.IP(prefix.prefix.Data[14:])
 		ps := fmt.Sprintf("%v/%v", p, pLen)
-		fmt.Printf(prefixFmt, ps, prefix.getAge())
+		fmt.Fprintf(w, prefixFmt, ps, prefix.getAge())
 	}
 }
 
-/* print dhcp information in device table */
-func printDhcp(device *deviceInfo) {
+// printDhcp prints dhcp information in device table
+func printDhcp(w io.Writer, device *deviceInfo) {
 	dhcpFmt := "    DHCP: %-38s (age: %.f)\n"
 	dhcpRole := "server"
 
 	if !device.dhcp.isEnabled() {
 		return
 	}
-	fmt.Printf(dhcpFmt, dhcpRole, device.dhcp.getAge())
+	fmt.Fprintf(w, dhcpFmt, dhcpRole, device.dhcp.getAge())
 }
 
-/* print bridge information in device table */
-func printBridge(device *deviceInfo) {
+// printBridge prints bridge information in device table
+func printBridge(w io.Writer, device *deviceInfo) {
 	bridgeFmt := "    Bridge: %-36t (age: %.f)\n"
 
 	if !device.bridge.isEnabled() {
 		return
 	}
-	fmt.Printf(bridgeFmt, device.bridge.isEnabled(),
+	fmt.Fprintf(w, bridgeFmt, device.bridge.isEnabled(),
 		device.bridge.getAge())
 }
 
-/* print powerline information in device table */
-func printPowerline(device *deviceInfo) {
+// printPowerline prints powerline information in device table
+func printPowerline(w io.Writer, device *deviceInfo) {
 	powerlineFmt := "    Powerline: %-33t (age: %.f)\n"
 
 	if !device.powerline.isEnabled() {
 		return
 	}
-	fmt.Printf(powerlineFmt, device.powerline.isEnabled(),
+	fmt.Fprintf(w, powerlineFmt, device.powerline.isEnabled(),
 		device.powerline.getAge())
 }
 
-/* print vlan information in device table */
-func printVlans(device *deviceInfo) {
+// printVlans prints vlan information in device table
+func printVlans(w io.Writer, device *deviceInfo) {
 	vlanFmt := "    VLAN: %-38d (age: %.f, pkts: %d)\n"
 
 	if len(device.vlans) == 0 {
@@ -858,13 +864,13 @@ func printVlans(device *deviceInfo) {
 	}
 	for _, vlan := range device.vlans {
 		/* print VLAN info */
-		fmt.Printf(vlanFmt, vlan.vlan, vlan.getAge(),
+		fmt.Fprintf(w, vlanFmt, vlan.vlan, vlan.getAge(),
 			vlan.packets)
 	}
 }
 
-/* print vxlan information in device table */
-func printVxlans(device *deviceInfo) {
+// printVxlans prints vxlan information in device table
+func printVxlans(w io.Writer, device *deviceInfo) {
 	vxlanFmt := "    VXLAN: %-37d (age: %.f, pkts: %d)\n"
 
 	if len(device.vxlans) == 0 {
@@ -872,13 +878,13 @@ func printVxlans(device *deviceInfo) {
 	}
 	for _, vxlan := range device.vxlans {
 		/* print VLAN info */
-		fmt.Printf(vxlanFmt, vxlan.vxlan, vxlan.getAge(),
+		fmt.Fprintf(w, vxlanFmt, vxlan.vxlan, vxlan.getAge(),
 			vxlan.packets)
 	}
 }
 
-/* print geneve information in device table */
-func printGeneves(device *deviceInfo) {
+// printGeneves prints geneve information in device table
+func printGeneves(w io.Writer, device *deviceInfo) {
 	geneveFmt := "    Geneve: %-36d (age: %.f, pkts: %d)\n"
 
 	if len(device.geneves) == 0 {
@@ -886,13 +892,13 @@ func printGeneves(device *deviceInfo) {
 	}
 	for _, geneve := range device.geneves {
 		/* print VLAN info */
-		fmt.Printf(geneveFmt, geneve.geneve, geneve.getAge(),
+		fmt.Fprintf(w, geneveFmt, geneve.geneve, geneve.getAge(),
 			geneve.packets)
 	}
 }
 
-/* print device properties in device table */
-func printProperties(device *deviceInfo) {
+// printProperties prints device properties in device table
+func printProperties(w io.Writer, device *deviceInfo) {
 	propsHeader := "  Properties:\n"
 
 	/* make sure any properties are present */
@@ -906,28 +912,28 @@ func printProperties(device *deviceInfo) {
 		return
 	}
 	/* start with header */
-	fmt.Printf(propsHeader)
+	fmt.Fprintf(w, propsHeader)
 
 	/* print device properties */
-	printBridge(device)
-	printDhcp(device)
-	printRouter(device)
-	printPowerline(device)
-	printVlans(device)
-	printVxlans(device)
-	printGeneves(device)
+	printBridge(w, device)
+	printDhcp(w, device)
+	printRouter(w, device)
+	printPowerline(w, device)
+	printVlans(w, device)
+	printVxlans(w, device)
+	printGeneves(w, device)
 }
 
-/* print ip information in device table */
-func _printIps(ips []*ipInfo) {
+// _printIps prints ip information in device table
+func _printIps(w io.Writer, ips []*ipInfo) {
 	ipFmt := "    IP: %-40s (age: %.f, pkts: %d)\n"
 	for _, info := range ips {
-		fmt.Printf(ipFmt, info.ip, info.getAge(), info.packets)
+		fmt.Fprintf(w, ipFmt, info.ip, info.getAge(), info.packets)
 	}
 }
 
-/* print ip addresses in device table */
-func printIps(device *deviceInfo) {
+// printIps prints ip addresses in device table
+func printIps(w io.Writer, device *deviceInfo) {
 	multicastHeader := "  Multicast Addresses:\n"
 	unicastHeader := "  Unicast Addresses:\n"
 	var multicasts []*ipInfo
@@ -944,19 +950,19 @@ func printIps(device *deviceInfo) {
 
 	/* print unicast addresses */
 	if len(unicasts) > 0 {
-		fmt.Printf(unicastHeader)
-		_printIps(unicasts)
+		fmt.Fprintf(w, unicastHeader)
+		_printIps(w, unicasts)
 	}
 
 	/* print multicast addresses */
 	if len(multicasts) > 0 {
-		fmt.Printf(multicastHeader)
-		_printIps(multicasts)
+		fmt.Fprintf(w, multicastHeader)
+		_printIps(w, multicasts)
 	}
 }
 
-/* print peer addresses in device table */
-func printPeers(device *deviceInfo) {
+// printPeers prints peer addresses in device table
+func printPeers(w io.Writer, device *deviceInfo) {
 	macPeersHeader := "  MAC Peers:\n"
 	ipPeersHeader := "  IP Peers:\n"
 
@@ -965,8 +971,8 @@ func printPeers(device *deviceInfo) {
 		for _, info := range device.macPeers {
 			macs = append(macs, info)
 		}
-		fmt.Printf(macPeersHeader)
-		_printIps(macs)
+		fmt.Fprintf(w, macPeersHeader)
+		_printIps(w, macs)
 	}
 
 	if len(device.ipPeers) > 0 {
@@ -974,43 +980,57 @@ func printPeers(device *deviceInfo) {
 		for _, info := range device.ipPeers {
 			ips = append(ips, info)
 		}
-		fmt.Printf(ipPeersHeader)
-		_printIps(ips)
+		fmt.Fprintf(w, ipPeersHeader)
+		_printIps(w, ips)
 	}
 }
 
-/* print device table periodically */
-func printDevices() {
+// printDevices prints the device table
+func printDevices(w io.Writer) {
 	devicesFmt := "===================================" +
 		"===================================\n" +
 		"Devices: %-39d (pkts: %d)\n" +
 		"===================================" +
 		"===================================\n"
 	macFmt := "MAC: %-43s (age: %.f, pkts: %d)\n"
+
+	/* lock devices */
+	devicesLock.Lock()
+
+	/* start with devices header */
+	fmt.Fprintf(w, devicesFmt, len(devices), packets)
+
+	for mac, device := range devices {
+		/* print MAC address */
+		fmt.Fprintf(w, macFmt, mac, device.getAge(),
+			device.packets)
+		/* print properties and ips */
+		printProperties(w, device)
+		printIps(w, device)
+		printPeers(w, device)
+		fmt.Fprintln(w)
+	}
+
+	/* unlock devices */
+	devicesLock.Unlock()
+
+}
+
+// printConsole prints the device table periodically to the console
+func printConsole() {
 	for {
-		/* lock devices */
-		devicesLock.Lock()
-
-		/* start with devices header */
-		fmt.Printf(devicesFmt, len(devices), packets)
-
-		for mac, device := range devices {
-			/* print MAC address */
-			fmt.Printf(macFmt, mac, device.getAge(),
-				device.packets)
-			/* print properties and ips */
-			printProperties(device)
-			printIps(device)
-			printPeers(device)
-			fmt.Println()
-		}
-
-		/* unlock devices */
-		devicesLock.Unlock()
+		// print devices
+		printDevices(os.Stdout)
 
 		/* wait 5 seconds before printing */
 		time.Sleep(5 * time.Second)
 	}
+
+}
+
+// printHttp prints the device table to http clients
+func printHttp(w http.ResponseWriter, r *http.Request) {
+	printDevices(w)
 }
 
 /*
@@ -1033,8 +1053,14 @@ func listen() {
 	}
 	defer pcapHandle.Close()
 
-	/* print device table periodically */
-	go printDevices()
+	if httpListen != "" {
+		// start http server and print device table to clients
+		http.HandleFunc("/", printHttp)
+		go http.ListenAndServe(httpListen, nil)
+	} else {
+		// print device table periodically to console
+		go printConsole()
+	}
 
 	/* Use the handle as a packet source to process all packets */
 	packetSource := gopacket.NewPacketSource(pcapHandle,
@@ -1076,6 +1102,8 @@ func parseCommandLine() {
 		"Set pcap snapshot length parameter in bytes")
 	flag.BoolVar(&debugMode, "debug", debugMode, "debugging mode")
 	flag.BoolVar(&withPeers, "peers", withPeers, "show peers")
+	flag.StringVar(&httpListen, "http", httpListen,
+		"use http server and set the listen address (e.g.: :8000)")
 
 	/* parse and overwrite default values of settings */
 	flag.Parse()
