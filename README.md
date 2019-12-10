@@ -37,6 +37,8 @@ Command line options of the `listnd` command:
 ```
   -debug
         debugging mode
+  -http string
+        use http server and set the listen address (e.g.: :8000)
   -i string
         the interface to listen on (default "eth0")
   -pcap-promisc
