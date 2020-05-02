@@ -11,7 +11,7 @@ You can download and install listnd with its dependencies to your GOPATH or
 GOBIN with the go tool:
 
 ```console
-$ go get github.com/hwipl/listnd
+$ go get github.com/hwipl/listnd/cmd/listnd
 ```
 
 ## Usage
