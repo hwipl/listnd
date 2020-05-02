@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"flag"
@@ -1117,8 +1117,8 @@ func parseCommandLine() {
 	debug(fmt.Sprintf("Peers Output: %t", withPeers))
 }
 
-/* main function */
-func main() {
+// Run is the main entry point of listnd
+func Run() {
 	parseCommandLine()
 	listen()
 }
