@@ -75,7 +75,7 @@ func printVlans(w io.Writer, device *deviceInfo) {
 		return
 	}
 	for _, vlan := range device.vlans {
-		/* print VLAN info */
+		// print VLAN info
 		fmt.Fprintf(w, vlanFmt, vlan.vlan, vlan.getAge(),
 			vlan.packets)
 	}
@@ -89,7 +89,7 @@ func printVxlans(w io.Writer, device *deviceInfo) {
 		return
 	}
 	for _, vxlan := range device.vxlans {
-		/* print VLAN info */
+		// print VXLAN info
 		fmt.Fprintf(w, vxlanFmt, vxlan.vxlan, vxlan.getAge(),
 			vxlan.packets)
 	}
@@ -103,7 +103,7 @@ func printGeneves(w io.Writer, device *deviceInfo) {
 		return
 	}
 	for _, geneve := range device.geneves {
-		/* print VLAN info */
+		// print Geneve info
 		fmt.Fprintf(w, geneveFmt, geneve.geneve, geneve.getAge(),
 			geneve.packets)
 	}
@@ -113,7 +113,7 @@ func printGeneves(w io.Writer, device *deviceInfo) {
 func printProperties(w io.Writer, device *deviceInfo) {
 	propsHeader := "  Properties:\n"
 
-	/* make sure any properties are present */
+	// make sure any properties are present
 	if !device.bridge.isEnabled() &&
 		!device.dhcp.isEnabled() &&
 		!device.router.isEnabled() &&
@@ -123,10 +123,10 @@ func printProperties(w io.Writer, device *deviceInfo) {
 		len(device.geneves) == 0 {
 		return
 	}
-	/* start with header */
+	// start with header
 	fmt.Fprintf(w, propsHeader)
 
-	/* print device properties */
+	// print device properties
 	printBridge(w, device)
 	printDhcp(w, device)
 	printRouter(w, device)
@@ -151,7 +151,7 @@ func printIps(w io.Writer, device *deviceInfo) {
 	var multicasts []*ipInfo
 	var unicasts []*ipInfo
 
-	/* search for ucast and mcast addresses */
+	// search for ucast and mcast addresses
 	for ip, info := range device.ips {
 		if net.IP(ip.Raw()).IsMulticast() {
 			multicasts = append(multicasts, info)
@@ -160,13 +160,13 @@ func printIps(w io.Writer, device *deviceInfo) {
 		unicasts = append(unicasts, info)
 	}
 
-	/* print unicast addresses */
+	// print unicast addresses
 	if len(unicasts) > 0 {
 		fmt.Fprintf(w, unicastHeader)
 		_printIps(w, unicasts)
 	}
 
-	/* print multicast addresses */
+	// print multicast addresses
 	if len(multicasts) > 0 {
 		fmt.Fprintf(w, multicastHeader)
 		_printIps(w, multicasts)
@@ -206,24 +206,24 @@ func printDevices(w io.Writer) {
 		"===================================\n"
 	macFmt := "MAC: %-43s (age: %.f, pkts: %d)\n"
 
-	/* lock devices */
+	// lock devices
 	devicesLock.Lock()
 
-	/* start with devices header */
+	// start with devices header
 	fmt.Fprintf(w, devicesFmt, len(devices), packets)
 
 	for mac, device := range devices {
-		/* print MAC address */
+		// print MAC address
 		fmt.Fprintf(w, macFmt, mac, device.getAge(),
 			device.packets)
-		/* print properties and ips */
+		// print properties and ips
 		printProperties(w, device)
 		printIps(w, device)
 		printPeers(w, device)
 		fmt.Fprintln(w)
 	}
 
-	/* unlock devices */
+	// unlock devices
 	devicesLock.Unlock()
 
 }
@@ -234,7 +234,7 @@ func printConsole() {
 		// print devices
 		printDevices(os.Stdout)
 
-		/* wait 5 seconds before printing */
+		// wait 5 seconds before printing
 		time.Sleep(5 * time.Second)
 	}
 
