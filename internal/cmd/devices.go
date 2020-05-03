@@ -17,12 +17,6 @@ var (
 	devices     = make(deviceMap)
 )
 
-/*
- ********************
- *** DEVICE TABLE ***
- ********************
- */
-
 /* struct for timestamps */
 type timeInfo struct {
 	timestamp time.Time
