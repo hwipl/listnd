@@ -9,25 +9,25 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
-/* variable definitions */
+// variable definitions
 var (
-	/* network device map */
+	// network device map
 	packets     int
 	devicesLock = &sync.Mutex{}
 	devices     = make(deviceMap)
 )
 
-/* struct for timestamps */
+//  timeInfo stores a timestamp
 type timeInfo struct {
 	timestamp time.Time
 }
 
-/* set timestamp */
+// setTimestamp sets the timestamp
 func (t *timeInfo) setTimestamp(timestamp time.Time) {
 	t.timestamp = timestamp
 }
 
-/* get seconds since timestamp */
+// getAge gets seconds since timestamp
 func (t *timeInfo) getAge() float64 {
 	if t.timestamp == (time.Time{}) {
 		return -1
@@ -35,22 +35,22 @@ func (t *timeInfo) getAge() float64 {
 	return time.Since(t.timestamp).Seconds()
 }
 
-/* struct for device properties */
+// propInfo is a device property
 type propInfo struct {
 	enabled bool
 }
 
-/* enable device property */
+// enable enables the device property
 func (p *propInfo) enable() {
 	p.enabled = true
 }
 
-/* disable device property */
+// disable disables the device property
 func (p *propInfo) disable() {
 	p.enabled = false
 }
 
-/* check if device property is enabled */
+// isEnabled checks if device property is enabled
 func (p *propInfo) isEnabled() bool {
 	if p != nil && p.enabled {
 		return true
@@ -58,21 +58,21 @@ func (p *propInfo) isEnabled() bool {
 	return false
 }
 
-/* struct for vlan information */
+// vlanInfo stores vlan information
 type vlanInfo struct {
 	timeInfo
 	vlan    uint16
 	packets int
 }
 
-/* struct for vxlan information */
+// vxlanInfo stores vxlan information
 type vxlanInfo struct {
 	timeInfo
 	vxlan   uint32
 	packets int
 }
 
-/* struct for vxlan information */
+// geneveInfo stores geneve information
 // TODO: common vnetInfo for vlan, vxlan, geneve?
 type geneveInfo struct {
 	timeInfo
@@ -80,45 +80,45 @@ type geneveInfo struct {
 	packets int
 }
 
-/* struct for ip addresses of devices on the network */
+// ipInfo stores an ip address of a device on the network
 type ipInfo struct {
 	timeInfo
 	ip      gopacket.Endpoint
 	packets int
 }
 
-/* struct for router information of devices on the network */
+// routerInfo stores router information of a device on the network
 type routerInfo struct {
 	propInfo
 	timeInfo
 	prefixes []*prefixInfo
 }
 
-/* struct for router's prefix information */
+// prefixInfo stores a router's prefix information
 type prefixInfo struct {
 	timeInfo
 	prefix layers.ICMPv6Option
 }
 
-/* struct for powerline information */
+// powerlineInfo stores powerline information
 type powerlineInfo struct {
 	propInfo
 	timeInfo
 }
 
-/* struct for dhcp information */
+// dhcpInfo stores dhcp information
 type dhcpInfo struct {
 	propInfo
 	timeInfo
 }
 
-/* struct for bridge information */
+// bridgeInfo stores bridge information
 type bridgeInfo struct {
 	propInfo
 	timeInfo
 }
 
-/* struct for devices found on the network */
+// deviceInfo is a device found on the network
 type deviceInfo struct {
 	timeInfo
 	mac       gopacket.Endpoint
@@ -135,15 +135,15 @@ type deviceInfo struct {
 	ipPeers   map[gopacket.Endpoint]*ipInfo
 }
 
-/* device table definition */
+// deviceMap is the device table definition
 type deviceMap map[gopacket.Endpoint]*deviceInfo
 
-/* clear prefixes in router info */
+// clearPrefixes clears prefixes in router info
 func (r *routerInfo) clearPrefixes() {
 	r.prefixes = nil
 }
 
-/* add prefix to router info */
+// addPrefix adds a prefix to router info
 func (r *routerInfo) addPrefix(prefix layers.ICMPv6Option) *prefixInfo {
 	p := prefixInfo{}
 	p.prefix = prefix
@@ -151,14 +151,14 @@ func (r *routerInfo) addPrefix(prefix layers.ICMPv6Option) *prefixInfo {
 	return &p
 }
 
-/* get prefixes from router info */
+// getPrefixes gets prefixes from router info
 func (r *routerInfo) getPrefixes() []*prefixInfo {
 	return r.prefixes
 }
 
-/* add a vlan to a device */
+// addVlan adds a vlan to a device
 func (d *deviceInfo) addVlan(vlanID uint16) {
-	/* add entry if it does not exist */
+	// add entry if it does not exist
 	if d.vlans[vlanID] == nil {
 		debug("Adding new vlan to an entry")
 		vlan := vlanInfo{}
@@ -167,9 +167,9 @@ func (d *deviceInfo) addVlan(vlanID uint16) {
 	}
 }
 
-/* add a vxlan to a device */
+// addVxlan adds a vxlan to a device
 func (d *deviceInfo) addVxlan(vni uint32) {
-	/* add entry if it does not exist */
+	// add entry if it does not et
 	if d.vxlans[vni] == nil {
 		debug("Adding new vxlan to an entry")
 		vxlan := vxlanInfo{}
@@ -178,9 +178,9 @@ func (d *deviceInfo) addVxlan(vni uint32) {
 	}
 }
 
-/* add a geneve to a device */
+// addGeneve adds a geneve to a device
 func (d *deviceInfo) addGeneve(vni uint32) {
-	/* add entry if it does not exist */
+	// add entry if it does not exist
 	if d.geneves[vni] == nil {
 		debug("Adding new geneve to an entry")
 		geneve := geneveInfo{}
@@ -189,14 +189,14 @@ func (d *deviceInfo) addGeneve(vni uint32) {
 	}
 }
 
-/* add an ip address to a device */
+// addIP adds an ip address to a device
 func (d *deviceInfo) addIP(netAddr gopacket.Endpoint) {
-	/* make sure address is valid */
+	// make sure address is valid
 	if !endpointIsValidIP(netAddr) {
 		return
 	}
 
-	/* add entry if it does not exist */
+	// add entry if it does not exist
 	if d.ips[netAddr] == nil {
 		debug("Adding new ip to an entry")
 		ip := ipInfo{}
@@ -205,21 +205,21 @@ func (d *deviceInfo) addIP(netAddr gopacket.Endpoint) {
 	}
 }
 
-/* remove an ip address from a device */
+// delIP removes an ip address from a device
 func (d *deviceInfo) delIP(netAddr gopacket.Endpoint) {
-	/* make sure address is valid */
+	// make sure address is valid
 	if !endpointIsValidIP(netAddr) {
 		return
 	}
 
-	/* remove entry if it exists */
+	// remove entry if it exists
 	if d.ips[netAddr] != nil {
 		debug("Deleting ip from an entry")
 		delete(d.ips, netAddr)
 	}
 }
 
-/* add a peer address to a device */
+// addPeer adds a peer address to a device
 func (d *deviceInfo) addPeer(addr gopacket.Endpoint) {
 	switch addr.EndpointType() {
 	case layers.EndpointMAC:
@@ -240,9 +240,9 @@ func (d *deviceInfo) addPeer(addr gopacket.Endpoint) {
 	}
 }
 
-/* add a device to the device table */
+// add adds a device to the device table
 func (d deviceMap) add(linkAddr gopacket.Endpoint) {
-	/* create table entries if necessary */
+	// create table entries if necessary
 	if d[linkAddr] == nil {
 		debug("Adding new entry")
 		device := deviceInfo{}
@@ -257,17 +257,18 @@ func (d deviceMap) add(linkAddr gopacket.Endpoint) {
 	}
 }
 
-/* add a device table entry with mac and ip address*/
+// addMacIP adds a device table entry with mac and ip address
 func (d deviceMap) addMacIP(linkAddr, netAddr gopacket.Endpoint) {
 	d.add(linkAddr)
 	d[linkAddr].addIP(netAddr)
 }
 
-/* check if IP address in endpoint is valid */
+// helper variables for checking if IP address in endpoint is valid
 var addrZero gopacket.Endpoint
 var addrUnspecv4 = layers.NewIPEndpoint(net.ParseIP("0.0.0.0"))
 var addrUnspecv6 = layers.NewIPEndpoint(net.ParseIP("::"))
 
+// endpointIsValidIP checks if IP address in endpoint is valid
 func endpointIsValidIP(e gopacket.Endpoint) bool {
 	if e == addrZero || e == addrUnspecv4 || e == addrUnspecv6 {
 		return false
