@@ -11,11 +11,11 @@ import (
 
 // listen listens on network the interface and parse packets
 func listen() {
-	/* convert pcap parameters from command line arguments */
+	// convert pcap parameters from command line arguments
 	_pcapTimeout := time.Duration(pcapTimeout) * time.Second
 	_pcapSnaplen := int32(pcapSnaplen)
 
-	/* open device */
+	// open device
 	pcapHandle, pcapErr = pcap.OpenLive(pcapDevice, _pcapSnaplen,
 		pcapPromisc, _pcapTimeout)
 	if pcapErr != nil {
@@ -32,14 +32,14 @@ func listen() {
 		go printConsole()
 	}
 
-	/* Use the handle as a packet source to process all packets */
+	// Use the handle as a packet source to process all packets
 	packetSource := gopacket.NewPacketSource(pcapHandle,
 		pcapHandle.LinkType())
 	for packet := range packetSource.Packets() {
-		/* lock devices */
+		// lock devices
 		devicesLock.Lock()
 
-		/* parse packet */
+		// parse packet
 		parseSrcMac(packet)
 		parsePeers(packet)
 		parseVlan(packet)
@@ -54,7 +54,7 @@ func listen() {
 		parsePlc(packet)
 		updateStatistics(packet)
 
-		/* unlock devices */
+		// unlock devices
 		devicesLock.Unlock()
 	}
 }
