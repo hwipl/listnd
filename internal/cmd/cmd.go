@@ -26,7 +26,7 @@ var (
 
 // parseCommandLine parses the command line arguments
 func parseCommandLine() {
-	/* define command line arguments */
+	// define command line arguments
 	flag.StringVar(&pcapDevice, "i", pcapDevice,
 		"the interface to listen on")
 	flag.BoolVar(&pcapPromisc, "pcap-promisc", pcapPromisc,
@@ -40,10 +40,10 @@ func parseCommandLine() {
 	flag.StringVar(&httpListen, "http", httpListen,
 		"use http server and set the listen address (e.g.: :8000)")
 
-	/* parse and overwrite default values of settings */
+	// parse and overwrite default values of settings
 	flag.Parse()
 
-	/* output settings */
+	// output settings
 	debug(fmt.Sprintf("Pcap Listen Device: %s", pcapDevice))
 	debug(fmt.Sprintf("Pcap Promiscuous: %t", pcapPromisc))
 	debug(fmt.Sprintf("Pcap Timeout: %d", pcapTimeout))
