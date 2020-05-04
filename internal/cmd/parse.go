@@ -82,22 +82,6 @@ func parsePeers(packet gopacket.Packet) {
 	devices[linkSrc].addPeer(netDst)
 }
 
-// parseVxlan parses VXLAN headers
-func parseVxlan(packet gopacket.Packet) {
-	vxlanLayer := packet.Layer(layers.LayerTypeVXLAN)
-	if vxlanLayer != nil {
-		debug("VXLAN Header")
-		vxlan, _ := vxlanLayer.(*layers.VXLAN)
-		if vxlan.ValidIDFlag {
-			linkSrc, _ := getMacs(packet)
-			devices[linkSrc].addVxlan(vxlan.VNI)
-			devices[linkSrc].vxlans[vxlan.VNI].setTimestamp(
-				packet.Metadata().Timestamp)
-			devices[linkSrc].vxlans[vxlan.VNI].packets++
-		}
-	}
-}
-
 // parseGeneve parses Geneve headers
 func parseGeneve(packet gopacket.Packet) {
 	geneveLayer := packet.Layer(layers.LayerTypeGeneve)
