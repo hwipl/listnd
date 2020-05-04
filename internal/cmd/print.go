@@ -240,7 +240,7 @@ func printConsole() {
 
 }
 
-// printHttp prints the device table to http clients
-func printHttp(w http.ResponseWriter, r *http.Request) {
+// printHTTP prints the device table to http clients
+func printHTTP(w http.ResponseWriter, r *http.Request) {
 	printDevices(w)
 }

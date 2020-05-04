@@ -25,7 +25,7 @@ func listen() {
 
 	if httpListen != "" {
 		// start http server and print device table to clients
-		http.HandleFunc("/", printHttp)
+		http.HandleFunc("/", printHTTP)
 		go http.ListenAndServe(httpListen, nil)
 	} else {
 		// print device table periodically to console
