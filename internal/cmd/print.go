@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"net/http"
 	"os"
 	"time"
 )
@@ -238,9 +237,4 @@ func printConsole() {
 		time.Sleep(5 * time.Second)
 	}
 
-}
-
-// printHTTP prints the device table to http clients
-func printHTTP(w http.ResponseWriter, r *http.Request) {
-	printDevices(w)
 }

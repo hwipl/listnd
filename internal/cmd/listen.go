@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/google/gopacket"
@@ -25,8 +24,7 @@ func listen() {
 
 	if httpListen != "" {
 		// start http server and print device table to clients
-		http.HandleFunc("/", printHTTP)
-		go http.ListenAndServe(httpListen, nil)
+		go startHTTP()
 	} else {
 		// print device table periodically to console
 		go printConsole()
