@@ -8,7 +8,7 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-// listen listens on network the interface and parse packets
+// listen listens on the network interface and parses packets
 func listen() {
 	// convert pcap parameters from command line arguments
 	_pcapTimeout := time.Duration(pcapTimeout) * time.Second
