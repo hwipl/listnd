@@ -82,20 +82,6 @@ func parsePeers(packet gopacket.Packet) {
 	devices[linkSrc].addPeer(netDst)
 }
 
-// parseGeneve parses Geneve headers
-func parseGeneve(packet gopacket.Packet) {
-	geneveLayer := packet.Layer(layers.LayerTypeGeneve)
-	if geneveLayer != nil {
-		debug("Geneve Header")
-		geneve, _ := geneveLayer.(*layers.Geneve)
-		linkSrc, _ := getMacs(packet)
-		devices[linkSrc].addGeneve(geneve.VNI)
-		devices[linkSrc].geneves[geneve.VNI].setTimestamp(
-			packet.Metadata().Timestamp)
-		devices[linkSrc].geneves[geneve.VNI].packets++
-	}
-}
-
 // parseArp parses ARP packets
 func parseArp(packet gopacket.Packet) {
 	arpLayer := packet.Layer(layers.LayerTypeARP)
