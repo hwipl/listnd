@@ -22,14 +22,6 @@ func listen() {
 	}
 	defer pcapHandle.Close()
 
-	if httpListen != "" {
-		// start http server and print device table to clients
-		go startHTTP()
-	} else {
-		// print device table periodically to console
-		go printConsole()
-	}
-
 	// Use the handle as a packet source to process all packets
 	packetSource := gopacket.NewPacketSource(pcapHandle,
 		pcapHandle.LinkType())

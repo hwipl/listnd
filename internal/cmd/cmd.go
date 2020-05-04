@@ -55,5 +55,12 @@ func parseCommandLine() {
 // Run is the main entry point of listnd
 func Run() {
 	parseCommandLine()
+	if httpListen != "" {
+		// start http server and print device table to clients
+		go startHTTP()
+	} else {
+		// print device table periodically to console
+		go printConsole()
+	}
 	listen()
 }
