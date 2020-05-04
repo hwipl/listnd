@@ -26,25 +26,6 @@ func listen() {
 	packetSource := gopacket.NewPacketSource(pcapHandle,
 		pcapHandle.LinkType())
 	for packet := range packetSource.Packets() {
-		// lock devices
-		devicesLock.Lock()
-
-		// parse packet
-		parseSrcMac(packet)
-		parsePeers(packet)
-		parseVlan(packet)
-		parseVxlan(packet)
-		parseGeneve(packet)
-		parseArp(packet)
-		parseNdp(packet)
-		parseIgmp(packet)
-		parseMld(packet)
-		parseDhcp(packet)
-		parseStp(packet)
-		parsePlc(packet)
-		updateStatistics(packet)
-
-		// unlock devices
-		devicesLock.Unlock()
+		parse(packet)
 	}
 }

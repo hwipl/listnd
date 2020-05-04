@@ -80,3 +80,28 @@ func parsePeers(packet gopacket.Packet) {
 	devices[linkSrc].addPeer(linkDst)
 	devices[linkSrc].addPeer(netDst)
 }
+
+// parse parses the packet
+func parse(packet gopacket.Packet) {
+	// lock devices
+	devicesLock.Lock()
+
+	// parse packet
+	parseSrcMac(packet)
+	parsePeers(packet)
+	parseVlan(packet)
+	parseVxlan(packet)
+	parseGeneve(packet)
+	parseArp(packet)
+	parseNdp(packet)
+	parseIgmp(packet)
+	parseMld(packet)
+	parseDhcp(packet)
+	parseStp(packet)
+	parsePlc(packet)
+	updateStatistics(packet)
+
+	// unlock devices
+	devicesLock.Unlock()
+
+}
