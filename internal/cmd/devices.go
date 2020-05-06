@@ -87,13 +87,6 @@ type ipInfo struct {
 	packets int
 }
 
-// routerInfo stores router information of a device on the network
-type routerInfo struct {
-	propInfo
-	timeInfo
-	prefixes []*prefixInfo
-}
-
 // prefixInfo stores a router's prefix information
 type prefixInfo struct {
 	timeInfo
@@ -137,24 +130,6 @@ type deviceInfo struct {
 
 // deviceMap is the device table definition
 type deviceMap map[gopacket.Endpoint]*deviceInfo
-
-// clearPrefixes clears prefixes in router info
-func (r *routerInfo) clearPrefixes() {
-	r.prefixes = nil
-}
-
-// addPrefix adds a prefix to router info
-func (r *routerInfo) addPrefix(prefix layers.ICMPv6Option) *prefixInfo {
-	p := prefixInfo{}
-	p.prefix = prefix
-	r.prefixes = append(r.prefixes, &p)
-	return &p
-}
-
-// getPrefixes gets prefixes from router info
-func (r *routerInfo) getPrefixes() []*prefixInfo {
-	return r.prefixes
-}
 
 // addVlan adds a vlan to a device
 func (d *deviceInfo) addVlan(vlanID uint16) {
