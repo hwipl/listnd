@@ -16,13 +16,6 @@ var (
 	devices     = make(deviceMap)
 )
 
-// ipInfo stores an ip address of a device on the network
-type ipInfo struct {
-	timeInfo
-	ip      gopacket.Endpoint
-	packets int
-}
-
 // prefixInfo stores a router's prefix information
 type prefixInfo struct {
 	timeInfo
