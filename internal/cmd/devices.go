@@ -16,12 +16,6 @@ var (
 	devices     = make(deviceMap)
 )
 
-// bridgeInfo stores bridge information
-type bridgeInfo struct {
-	propInfo
-	timeInfo
-}
-
 // deviceInfo is a device found on the network
 type deviceInfo struct {
 	timeInfo
