@@ -16,14 +16,6 @@ var (
 	devices     = make(deviceMap)
 )
 
-// geneveInfo stores geneve information
-// TODO: common vnetInfo for vlan, vxlan, geneve?
-type geneveInfo struct {
-	timeInfo
-	geneve  uint32
-	packets int
-}
-
 // ipInfo stores an ip address of a device on the network
 type ipInfo struct {
 	timeInfo
