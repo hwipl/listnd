@@ -16,12 +16,6 @@ var (
 	devices     = make(deviceMap)
 )
 
-// prefixInfo stores a router's prefix information
-type prefixInfo struct {
-	timeInfo
-	prefix layers.ICMPv6Option
-}
-
 // powerlineInfo stores powerline information
 type powerlineInfo struct {
 	propInfo
