@@ -16,12 +16,6 @@ var (
 	devices     = make(deviceMap)
 )
 
-// dhcpInfo stores dhcp information
-type dhcpInfo struct {
-	propInfo
-	timeInfo
-}
-
 // bridgeInfo stores bridge information
 type bridgeInfo struct {
 	propInfo
