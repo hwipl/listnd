@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"net"
 	"sync"
 
 	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 )
 
 // variable definitions
@@ -40,18 +38,4 @@ func (d deviceMap) add(linkAddr gopacket.Endpoint) {
 func (d deviceMap) addMacIP(linkAddr, netAddr gopacket.Endpoint) {
 	d.add(linkAddr)
 	d[linkAddr].addIP(netAddr)
-}
-
-// helper variables for checking if IP address in endpoint is valid
-var addrZero gopacket.Endpoint
-var addrUnspecv4 = layers.NewIPEndpoint(net.ParseIP("0.0.0.0"))
-var addrUnspecv6 = layers.NewIPEndpoint(net.ParseIP("::"))
-
-// endpointIsValidIP checks if IP address in endpoint is valid
-func endpointIsValidIP(e gopacket.Endpoint) bool {
-	if e == addrZero || e == addrUnspecv4 || e == addrUnspecv6 {
-		return false
-	}
-
-	return true
 }
