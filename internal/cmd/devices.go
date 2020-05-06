@@ -16,13 +16,6 @@ var (
 	devices     = make(deviceMap)
 )
 
-// vlanInfo stores vlan information
-type vlanInfo struct {
-	timeInfo
-	vlan    uint16
-	packets int
-}
-
 // vxlanInfo stores vxlan information
 type vxlanInfo struct {
 	timeInfo
