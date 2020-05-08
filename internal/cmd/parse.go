@@ -35,7 +35,7 @@ func updateStatistics(packet gopacket.Packet) {
 	netSrc, netDst := getIps(packet)
 
 	// increase packet counters
-	packets++
+	devices.packets++
 	if device := devices.Get(linkSrc); device != nil {
 		timestamp := packet.Metadata().Timestamp
 

@@ -9,14 +9,14 @@ import (
 // variable definitions
 var (
 	// network device map
-	packets int
 	devices deviceMap
 )
 
 // deviceMap is the device table definition
 type deviceMap struct {
 	sync.Mutex
-	m map[gopacket.Endpoint]*deviceInfo
+	packets int
+	m       map[gopacket.Endpoint]*deviceInfo
 }
 
 // add adds a device to the device table and returns the new device info entry

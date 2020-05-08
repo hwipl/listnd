@@ -209,7 +209,7 @@ func printDevices(w io.Writer) {
 	devices.Lock()
 
 	// start with devices header
-	fmt.Fprintf(w, devicesFmt, len(devices.m), packets)
+	fmt.Fprintf(w, devicesFmt, len(devices.m), devices.packets)
 
 	for mac, device := range devices.m {
 		// print MAC address
