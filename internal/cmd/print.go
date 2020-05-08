@@ -209,9 +209,9 @@ func printDevices(w io.Writer) {
 	devicesLock.Lock()
 
 	// start with devices header
-	fmt.Fprintf(w, devicesFmt, len(devices), packets)
+	fmt.Fprintf(w, devicesFmt, len(devices.m), packets)
 
-	for mac, device := range devices {
+	for mac, device := range devices.m {
 		// print MAC address
 		fmt.Fprintf(w, macFmt, mac, device.getAge(),
 			device.packets)

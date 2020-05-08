@@ -11,16 +11,22 @@ var (
 	// network device map
 	packets     int
 	devicesLock = &sync.Mutex{}
-	devices     = make(deviceMap)
+	devices     deviceMap
 )
 
 // deviceMap is the device table definition
-type deviceMap map[gopacket.Endpoint]*deviceInfo
+type deviceMap struct {
+	m map[gopacket.Endpoint]*deviceInfo
+}
 
 // add adds a device to the device table and returns the new device info entry
-func (d deviceMap) add(linkAddr gopacket.Endpoint) *deviceInfo {
+func (d *deviceMap) add(linkAddr gopacket.Endpoint) *deviceInfo {
+	// create map if necessary
+	if d.m == nil {
+		d.m = make(map[gopacket.Endpoint]*deviceInfo)
+	}
 	// create table entries if necessary
-	if d[linkAddr] == nil {
+	if d.m[linkAddr] == nil {
 		debug("Adding new entry")
 		device := deviceInfo{}
 		device.mac = linkAddr
@@ -30,21 +36,24 @@ func (d deviceMap) add(linkAddr gopacket.Endpoint) *deviceInfo {
 		device.ips = make(map[gopacket.Endpoint]*ipInfo)
 		device.macPeers = make(map[gopacket.Endpoint]*ipInfo)
 		device.ipPeers = make(map[gopacket.Endpoint]*ipInfo)
-		d[linkAddr] = &device
+		d.m[linkAddr] = &device
 	}
-	return d[linkAddr]
+	return d.m[linkAddr]
 }
 
 // Get returns device information for device with linkAddr
-func (d deviceMap) Get(linkAddr gopacket.Endpoint) *deviceInfo {
+func (d *deviceMap) Get(linkAddr gopacket.Endpoint) *deviceInfo {
 	if d == nil {
 		return nil
 	}
-	return d[linkAddr]
+	if d.m[linkAddr] == nil {
+		return nil
+	}
+	return d.m[linkAddr]
 }
 
 // addMacIP adds a device table entry with mac and ip address
-func (d deviceMap) addMacIP(linkAddr, netAddr gopacket.Endpoint) {
+func (d *deviceMap) addMacIP(linkAddr, netAddr gopacket.Endpoint) {
 	d.add(linkAddr)
-	d[linkAddr].addIP(netAddr)
+	d.m[linkAddr].addIP(netAddr)
 }
