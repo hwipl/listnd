@@ -17,8 +17,8 @@ var (
 // deviceMap is the device table definition
 type deviceMap map[gopacket.Endpoint]*deviceInfo
 
-// add adds a device to the device table
-func (d deviceMap) add(linkAddr gopacket.Endpoint) {
+// add adds a device to the device table and returns the new device info entry
+func (d deviceMap) add(linkAddr gopacket.Endpoint) *deviceInfo {
 	// create table entries if necessary
 	if d[linkAddr] == nil {
 		debug("Adding new entry")
@@ -32,6 +32,7 @@ func (d deviceMap) add(linkAddr gopacket.Endpoint) {
 		device.ipPeers = make(map[gopacket.Endpoint]*ipInfo)
 		d[linkAddr] = &device
 	}
+	return d[linkAddr]
 }
 
 // Get returns device information for device with linkAddr
