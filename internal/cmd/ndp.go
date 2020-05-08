@@ -15,7 +15,8 @@ func parseNdp(packet gopacket.Packet) {
 		netSrc, _ := getIps(packet)
 
 		// add to table
-		devices.addMacIP(linkSrc, netSrc)
+		dev := devices.add(linkSrc)
+		dev.addIP(netSrc)
 
 		return
 	}
@@ -29,7 +30,8 @@ func parseNdp(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 
 		// add to table
-		devices.addMacIP(linkSrc, targetIP)
+		dev := devices.add(linkSrc)
+		dev.addIP(targetIP)
 
 		return
 	}
@@ -42,7 +44,8 @@ func parseNdp(packet gopacket.Packet) {
 		netSrc, _ := getIps(packet)
 
 		// add to table
-		devices.addMacIP(linkSrc, netSrc)
+		dev := devices.add(linkSrc)
+		dev.addIP(netSrc)
 
 		return
 	}
@@ -55,11 +58,11 @@ func parseNdp(packet gopacket.Packet) {
 		netSrc, _ := getIps(packet)
 
 		// add to table
-		devices.addMacIP(linkSrc, netSrc)
+		dev := devices.add(linkSrc)
+		dev.addIP(netSrc)
 
 		// mark device as a router
 		timestamp := packet.Metadata().Timestamp
-		dev := devices.Get(linkSrc)
 		dev.router.enable()
 		dev.router.setTimestamp(timestamp)
 
