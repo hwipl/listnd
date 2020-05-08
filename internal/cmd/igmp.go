@@ -16,7 +16,8 @@ func parseIgmp(packet gopacket.Packet) {
 
 	// add source IP to device
 	netSrc, _ := getIps(packet)
-	devices[linkSrc].addIP(netSrc)
+	dev := devices.Get(linkSrc)
+	dev.addIP(netSrc)
 
 	// igmp v1 or v2
 	if igmp, ok := igmpLayer.(*layers.IGMPv1or2); ok {
@@ -25,23 +26,22 @@ func parseIgmp(packet gopacket.Packet) {
 		case layers.IGMPMembershipQuery:
 			debug("IGMPv1or2 Membership Query")
 			// queries are sent by routers, mark as router
-			devices[linkSrc].router.enable()
-			devices[linkSrc].router.setTimestamp(
-				packet.Metadata().Timestamp)
+			dev.router.enable()
+			dev.router.setTimestamp(packet.Metadata().Timestamp)
 		case layers.IGMPMembershipReportV1:
 			debug("IGMPv1 Membership Report")
 			// add IP
-			devices[linkSrc].addIP(layers.NewIPEndpoint(
+			dev.addIP(layers.NewIPEndpoint(
 				igmp.GroupAddress))
 		case layers.IGMPMembershipReportV2:
 			debug("IGMPv2 Membership Report")
 			// add IP
-			devices[linkSrc].addIP(layers.NewIPEndpoint(
+			dev.addIP(layers.NewIPEndpoint(
 				igmp.GroupAddress))
 		case layers.IGMPLeaveGroup:
 			debug("IGMPv1or2 Leave Group")
 			// remove IP
-			devices[linkSrc].delIP(layers.NewIPEndpoint(
+			dev.delIP(layers.NewIPEndpoint(
 				igmp.GroupAddress))
 		}
 	}
@@ -51,8 +51,8 @@ func parseIgmp(packet gopacket.Packet) {
 		if igmp.Type == layers.IGMPMembershipQuery {
 			debug("IGMPv3 Membership Query")
 			// queries are sent by routers, mark as router
-			devices[linkSrc].router.enable()
-			devices[linkSrc].router.setTimestamp(
+			dev.router.enable()
+			dev.router.setTimestamp(
 				packet.Metadata().Timestamp)
 		}
 
@@ -63,14 +63,12 @@ func parseIgmp(packet gopacket.Packet) {
 				switch v.Type {
 				case layers.IGMPIsEx, layers.IGMPToEx:
 					// add IP
-					devices[linkSrc].addIP(
-						layers.NewIPEndpoint(
-							v.MulticastAddress))
+					dev.addIP(layers.NewIPEndpoint(
+						v.MulticastAddress))
 				case layers.IGMPIsIn, layers.IGMPToIn:
 					// remove IP
-					devices[linkSrc].delIP(
-						layers.NewIPEndpoint(
-							v.MulticastAddress))
+					dev.delIP(layers.NewIPEndpoint(
+						v.MulticastAddress))
 				}
 			}
 		}

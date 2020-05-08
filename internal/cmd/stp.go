@@ -14,8 +14,8 @@ func parseStp(packet gopacket.Packet) {
 
 		// add device and mark this device as a bridge
 		devices.add(linkSrc)
-		devices[linkSrc].bridge.enable()
-		devices[linkSrc].bridge.setTimestamp(
-			packet.Metadata().Timestamp)
+		dev := devices.Get(linkSrc)
+		dev.bridge.enable()
+		dev.bridge.setTimestamp(packet.Metadata().Timestamp)
 	}
 }

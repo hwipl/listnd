@@ -20,10 +20,10 @@ func parseMld(packet gopacket.Packet) {
 		// queries are sent by routers, mark as router
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
-		devices[linkSrc].addIP(netSrc)
-		devices[linkSrc].router.enable()
-		devices[linkSrc].router.setTimestamp(
-			packet.Metadata().Timestamp)
+		dev := devices.Get(linkSrc)
+		dev.addIP(netSrc)
+		dev.router.enable()
+		dev.router.setTimestamp(packet.Metadata().Timestamp)
 		return
 	}
 
@@ -34,9 +34,9 @@ func parseMld(packet gopacket.Packet) {
 		done, _ := dlv1.(*layers.MLDv1MulticastListenerDoneMessage)
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
-		devices[linkSrc].addIP(netSrc)
-		devices[linkSrc].delIP(
-			layers.NewIPEndpoint(done.MulticastAddress))
+		dev := devices.Get(linkSrc)
+		dev.addIP(netSrc)
+		dev.delIP(layers.NewIPEndpoint(done.MulticastAddress))
 		return
 	}
 
@@ -47,9 +47,9 @@ func parseMld(packet gopacket.Packet) {
 		report, _ := rlv1.(*layers.MLDv1MulticastListenerReportMessage)
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
-		devices[linkSrc].addIP(netSrc)
-		devices[linkSrc].addIP(
-			layers.NewIPEndpoint(report.MulticastAddress))
+		dev := devices.Get(linkSrc)
+		dev.addIP(netSrc)
+		dev.addIP(layers.NewIPEndpoint(report.MulticastAddress))
 		return
 	}
 
@@ -60,10 +60,10 @@ func parseMld(packet gopacket.Packet) {
 		// queries are sent by routers, mark as router
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
-		devices[linkSrc].addIP(netSrc)
-		devices[linkSrc].router.enable()
-		devices[linkSrc].router.setTimestamp(
-			packet.Metadata().Timestamp)
+		dev := devices.Get(linkSrc)
+		dev.addIP(netSrc)
+		dev.router.enable()
+		dev.router.setTimestamp(packet.Metadata().Timestamp)
 		return
 	}
 
@@ -73,18 +73,19 @@ func parseMld(packet gopacket.Packet) {
 		report, _ := rlv2.(*layers.MLDv2MulticastListenerReportMessage)
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
-		devices[linkSrc].addIP(netSrc)
+		dev := devices.Get(linkSrc)
+		dev.addIP(netSrc)
 
 		// parse multicast addresses and add/remove them
 		for _, v := range report.MulticastAddressRecords {
 			switch v.RecordType {
 			case mldv2IsEx, mldv2ToEx:
 				// add IP
-				devices[linkSrc].addIP(layers.NewIPEndpoint(
+				dev.addIP(layers.NewIPEndpoint(
 					v.MulticastAddress))
 			case mldv2IsIn, mldv2ToIn:
 				// remove IP
-				devices[linkSrc].delIP(layers.NewIPEndpoint(
+				dev.delIP(layers.NewIPEndpoint(
 					v.MulticastAddress))
 			}
 		}

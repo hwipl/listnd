@@ -34,6 +34,14 @@ func (d deviceMap) add(linkAddr gopacket.Endpoint) {
 	}
 }
 
+// Get returns device information for device with linkAddr
+func (d deviceMap) Get(linkAddr gopacket.Endpoint) *deviceInfo {
+	if d == nil {
+		return nil
+	}
+	return d[linkAddr]
+}
+
 // addMacIP adds a device table entry with mac and ip address
 func (d deviceMap) addMacIP(linkAddr, netAddr gopacket.Endpoint) {
 	d.add(linkAddr)

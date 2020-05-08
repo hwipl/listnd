@@ -12,9 +12,10 @@ func parseVlan(packet gopacket.Packet) {
 		debug("VLAN Tag")
 		vlan, _ := vlanLayer.(*layers.Dot1Q)
 		linkSrc, _ := getMacs(packet)
-		devices[linkSrc].addVlan(vlan.VLANIdentifier)
-		devices[linkSrc].vlans[vlan.VLANIdentifier].setTimestamp(
+		dev := devices.Get(linkSrc)
+		dev.addVlan(vlan.VLANIdentifier)
+		dev.vlans[vlan.VLANIdentifier].setTimestamp(
 			packet.Metadata().Timestamp)
-		devices[linkSrc].vlans[vlan.VLANIdentifier].packets++
+		dev.vlans[vlan.VLANIdentifier].packets++
 	}
 }

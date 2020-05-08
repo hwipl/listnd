@@ -22,9 +22,9 @@ func parseDhcp(packet gopacket.Packet) {
 		if dhcp.Operation == layers.DHCPOpReply {
 			debug("DHCP Reply")
 			// mark this device as dhcp server
-			devices[linkSrc].dhcp.enable()
-			devices[linkSrc].dhcp.setTimestamp(
-				packet.Metadata().Timestamp)
+			dev := devices.Get(linkSrc)
+			dev.dhcp.enable()
+			dev.dhcp.setTimestamp(packet.Metadata().Timestamp)
 		}
 	}
 
@@ -34,7 +34,8 @@ func parseDhcp(packet gopacket.Packet) {
 		dhcp, _ := dhcpv6Layer.(*layers.DHCPv6)
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
-		devices[linkSrc].addIP(netSrc)
+		dev := devices.Get(linkSrc)
+		dev.addIP(netSrc)
 		timestamp := packet.Metadata().Timestamp
 
 		// parse message type to determine if server or client
@@ -46,8 +47,8 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeRequest:
 			debug("DHCPv6 Request")
 			// server
-			devices[linkSrc].dhcp.enable()
-			devices[linkSrc].dhcp.setTimestamp(timestamp)
+			dev.dhcp.enable()
+			dev.dhcp.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeConfirm:
 			debug("DHCPv6 Confirm")
 		case layers.DHCPv6MsgTypeRenew:
@@ -57,8 +58,8 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeReply:
 			debug("DHCPv6 Reply")
 			// server
-			devices[linkSrc].dhcp.enable()
-			devices[linkSrc].dhcp.setTimestamp(timestamp)
+			dev.dhcp.enable()
+			dev.dhcp.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeRelease:
 			debug("DHCPv6 Release")
 		case layers.DHCPv6MsgTypeDecline:
@@ -66,8 +67,8 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeReconfigure:
 			debug("DHCPv6 Reconfigure")
 			// server
-			devices[linkSrc].dhcp.enable()
-			devices[linkSrc].dhcp.setTimestamp(timestamp)
+			dev.dhcp.enable()
+			dev.dhcp.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeInformationRequest:
 			debug("DHCPv6 Information Request")
 		case layers.DHCPv6MsgTypeRelayForward:
@@ -75,8 +76,8 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeRelayReply:
 			debug("DHCPv6 Relay Reply")
 			// server
-			devices[linkSrc].dhcp.enable()
-			devices[linkSrc].dhcp.setTimestamp(timestamp)
+			dev.dhcp.enable()
+			dev.dhcp.setTimestamp(timestamp)
 		}
 	}
 }
