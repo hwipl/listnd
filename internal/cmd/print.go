@@ -206,7 +206,7 @@ func printDevices(w io.Writer) {
 	macFmt := "MAC: %-43s (age: %.f, pkts: %d)\n"
 
 	// lock devices
-	devicesLock.Lock()
+	devices.Lock()
 
 	// start with devices header
 	fmt.Fprintf(w, devicesFmt, len(devices.m), packets)
@@ -223,7 +223,7 @@ func printDevices(w io.Writer) {
 	}
 
 	// unlock devices
-	devicesLock.Unlock()
+	devices.Unlock()
 
 }
 

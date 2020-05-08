@@ -85,7 +85,7 @@ func parsePeers(packet gopacket.Packet) {
 // parse parses the packet
 func parse(packet gopacket.Packet) {
 	// lock devices
-	devicesLock.Lock()
+	devices.Lock()
 
 	// parse packet
 	parseSrcMac(packet)
@@ -103,6 +103,6 @@ func parse(packet gopacket.Packet) {
 	updateStatistics(packet)
 
 	// unlock devices
-	devicesLock.Unlock()
+	devices.Unlock()
 
 }
