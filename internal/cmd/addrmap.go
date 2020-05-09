@@ -17,13 +17,19 @@ var (
 
 // isValidAddr checks if address is valid
 func isValidAddr(address gopacket.Endpoint) bool {
+	if address == addrZero {
+		return false
+	}
+
 	switch address.EndpointType() {
-	case layers.EndpointIPv4, layers.EndpointIPv6:
-		if address == addrZero || address == addrUnspecv4 ||
-			address == addrUnspecv6 {
-			return false
+	case layers.EndpointIPv4:
+		if address != addrUnspecv4 {
+			return true
 		}
-		return true
+	case layers.EndpointIPv6:
+		if address != addrUnspecv6 {
+			return true
+		}
 	case layers.EndpointMAC:
 		return true
 	}
