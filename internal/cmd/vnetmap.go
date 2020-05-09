@@ -1,5 +1,10 @@
 package cmd
 
+import (
+	"fmt"
+	"io"
+)
+
 // vnetMap stores mappings from vnet IDs to vnet information
 type vnetMap struct {
 	m map[uint32]*vnetInfo
@@ -23,4 +28,11 @@ func (v *vnetMap) Get(id uint32) *vnetInfo {
 		return nil
 	}
 	return v.m[id]
+}
+
+// Print prints the vnet map to w
+func (v *vnetMap) Print(w io.Writer) {
+	for _, vnet := range v.m {
+		fmt.Fprintf(w, "    %s\n", vnet)
+	}
 }

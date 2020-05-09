@@ -66,39 +66,6 @@ func printPowerline(w io.Writer, device *deviceInfo) {
 		device.powerline.getAge())
 }
 
-// printVlans prints vlan information in device table
-func printVlans(w io.Writer, device *deviceInfo) {
-	vlanFmt := "    VLAN: %-38d (age: %.f, pkts: %d)\n"
-
-	for _, vlan := range device.vlans.m {
-		// print VLAN info
-		fmt.Fprintf(w, vlanFmt, vlan.ID, vlan.getAge(),
-			vlan.packets)
-	}
-}
-
-// printVxlans prints vxlan information in device table
-func printVxlans(w io.Writer, device *deviceInfo) {
-	vxlanFmt := "    VXLAN: %-37d (age: %.f, pkts: %d)\n"
-
-	for _, vxlan := range device.vxlans.m {
-		// print VXLAN info
-		fmt.Fprintf(w, vxlanFmt, vxlan.ID, vxlan.getAge(),
-			vxlan.packets)
-	}
-}
-
-// printGeneves prints geneve information in device table
-func printGeneves(w io.Writer, device *deviceInfo) {
-	geneveFmt := "    Geneve: %-36d (age: %.f, pkts: %d)\n"
-
-	for _, geneve := range device.geneves.m {
-		// print Geneve info
-		fmt.Fprintf(w, geneveFmt, geneve.ID, geneve.getAge(),
-			geneve.packets)
-	}
-}
-
 // printProperties prints device properties in device table
 func printProperties(w io.Writer, device *deviceInfo) {
 	propsHeader := "  Properties:\n"
@@ -121,9 +88,9 @@ func printProperties(w io.Writer, device *deviceInfo) {
 	printDhcp(w, device)
 	printRouter(w, device)
 	printPowerline(w, device)
-	printVlans(w, device)
-	printVxlans(w, device)
-	printGeneves(w, device)
+	device.vlans.Print(w)
+	device.vxlans.Print(w)
+	device.geneves.Print(w)
 }
 
 // _printIps prints ip information in device table
