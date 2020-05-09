@@ -9,7 +9,7 @@ type deviceInfo struct {
 	timeInfo
 	mac       gopacket.Endpoint
 	vlans     map[uint16]*vnetInfo
-	vxlans    map[uint32]*vnetInfo
+	vxlans    vnetMap
 	geneves   vnetMap
 	powerline powerlineInfo
 	bridge    bridgeInfo
@@ -29,16 +29,5 @@ func (d *deviceInfo) addVlan(vlanID uint16) {
 		vlan := vnetInfo{}
 		vlan.ID = uint32(vlanID)
 		d.vlans[vlanID] = &vlan
-	}
-}
-
-// addVxlan adds a vxlan to a device
-func (d *deviceInfo) addVxlan(vni uint32) {
-	// add entry if it does not et
-	if d.vxlans[vni] == nil {
-		debug("Adding new vxlan to an entry")
-		vxlan := vnetInfo{}
-		vxlan.ID = vni
-		d.vxlans[vni] = &vxlan
 	}
 }

@@ -14,10 +14,9 @@ func parseVxlan(packet gopacket.Packet) {
 		if vxlan.ValidIDFlag {
 			linkSrc, _ := getMacs(packet)
 			dev := devices.Get(linkSrc)
-			dev.addVxlan(vxlan.VNI)
-			dev.vxlans[vxlan.VNI].setTimestamp(
-				packet.Metadata().Timestamp)
-			dev.vxlans[vxlan.VNI].packets++
+			v := dev.vxlans.Add(vxlan.VNI)
+			v.setTimestamp(packet.Metadata().Timestamp)
+			v.packets++
 		}
 	}
 }

@@ -84,10 +84,7 @@ func printVlans(w io.Writer, device *deviceInfo) {
 func printVxlans(w io.Writer, device *deviceInfo) {
 	vxlanFmt := "    VXLAN: %-37d (age: %.f, pkts: %d)\n"
 
-	if len(device.vxlans) == 0 {
-		return
-	}
-	for _, vxlan := range device.vxlans {
+	for _, vxlan := range device.vxlans.m {
 		// print VXLAN info
 		fmt.Fprintf(w, vxlanFmt, vxlan.ID, vxlan.getAge(),
 			vxlan.packets)
@@ -115,7 +112,7 @@ func printProperties(w io.Writer, device *deviceInfo) {
 		!device.router.isEnabled() &&
 		!device.powerline.isEnabled() &&
 		len(device.vlans) == 0 &&
-		len(device.vxlans) == 0 &&
+		len(device.vxlans.m) == 0 &&
 		len(device.geneves.m) == 0 {
 		return
 	}
