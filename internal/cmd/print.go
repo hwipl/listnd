@@ -89,7 +89,7 @@ func printVxlans(w io.Writer, device *deviceInfo) {
 	}
 	for _, vxlan := range device.vxlans {
 		// print VXLAN info
-		fmt.Fprintf(w, vxlanFmt, vxlan.vxlan, vxlan.getAge(),
+		fmt.Fprintf(w, vxlanFmt, vxlan.ID, vxlan.getAge(),
 			vxlan.packets)
 	}
 }
