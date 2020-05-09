@@ -1,27 +1,9 @@
 package cmd
 
 import (
-	"net"
-
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 )
-
-var (
-	// helper variables for checking if IP address in endpoint is valid
-	addrZero     gopacket.Endpoint
-	addrUnspecv4 = layers.NewIPEndpoint(net.ParseIP("0.0.0.0"))
-	addrUnspecv6 = layers.NewIPEndpoint(net.ParseIP("::"))
-)
-
-// endpointIsValidIP checks if IP address in endpoint is valid
-func endpointIsValidIP(e gopacket.Endpoint) bool {
-	if e == addrZero || e == addrUnspecv4 || e == addrUnspecv6 {
-		return false
-	}
-
-	return true
-}
 
 // deviceInfo is a device found on the network
 type deviceInfo struct {

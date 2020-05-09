@@ -1,17 +1,29 @@
 package cmd
 
 import (
+	"net"
+
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+)
+
+var (
+	// helper variables for checking if IP address in endpoint is valid
+	// TODO: check
+	addrZero     gopacket.Endpoint
+	addrUnspecv4 = layers.NewIPEndpoint(net.ParseIP("0.0.0.0"))
+	addrUnspecv6 = layers.NewIPEndpoint(net.ParseIP("::"))
 )
 
 // isValidAddr checks if address is valid
 func isValidAddr(address gopacket.Endpoint) bool {
 	switch address.EndpointType() {
 	case layers.EndpointIPv4, layers.EndpointIPv6:
-		if endpointIsValidIP(address) {
-			return true
+		if address == addrZero || address == addrUnspecv4 ||
+			address == addrUnspecv6 {
+			return false
 		}
+		return true
 	case layers.EndpointMAC:
 		return true
 	}
