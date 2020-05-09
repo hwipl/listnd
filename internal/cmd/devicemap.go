@@ -33,9 +33,9 @@ func (d *deviceMap) add(linkAddr gopacket.Endpoint) *deviceInfo {
 		device.vlans = make(map[uint16]*vlanInfo)
 		device.vxlans = make(map[uint32]*vxlanInfo)
 		device.geneves = make(map[uint32]*geneveInfo)
-		device.ips = make(map[gopacket.Endpoint]*ipInfo)
-		device.macPeers = make(map[gopacket.Endpoint]*ipInfo)
-		device.ipPeers = make(map[gopacket.Endpoint]*ipInfo)
+		device.ips = make(map[gopacket.Endpoint]*AddrInfo)
+		device.macPeers = make(map[gopacket.Endpoint]*AddrInfo)
+		device.ipPeers = make(map[gopacket.Endpoint]*AddrInfo)
 		d.m[linkAddr] = &device
 	}
 	return d.m[linkAddr]

@@ -136,7 +136,7 @@ func printProperties(w io.Writer, device *deviceInfo) {
 }
 
 // _printIps prints ip information in device table
-func _printIps(w io.Writer, ips []*ipInfo) {
+func _printIps(w io.Writer, ips []*AddrInfo) {
 	ipFmt := "    IP: %-40s (age: %.f, pkts: %d)\n"
 	for _, info := range ips {
 		fmt.Fprintf(w, ipFmt, info.ip, info.getAge(), info.packets)
@@ -147,8 +147,8 @@ func _printIps(w io.Writer, ips []*ipInfo) {
 func printIps(w io.Writer, device *deviceInfo) {
 	multicastHeader := "  Multicast Addresses:\n"
 	unicastHeader := "  Unicast Addresses:\n"
-	var multicasts []*ipInfo
-	var unicasts []*ipInfo
+	var multicasts []*AddrInfo
+	var unicasts []*AddrInfo
 
 	// search for ucast and mcast addresses
 	for ip, info := range device.ips {
@@ -178,7 +178,7 @@ func printPeers(w io.Writer, device *deviceInfo) {
 	ipPeersHeader := "  IP Peers:\n"
 
 	if len(device.macPeers) > 0 {
-		var macs []*ipInfo
+		var macs []*AddrInfo
 		for _, info := range device.macPeers {
 			macs = append(macs, info)
 		}
@@ -187,7 +187,7 @@ func printPeers(w io.Writer, device *deviceInfo) {
 	}
 
 	if len(device.ipPeers) > 0 {
-		var ips []*ipInfo
+		var ips []*AddrInfo
 		for _, info := range device.ipPeers {
 			ips = append(ips, info)
 		}

@@ -2,8 +2,8 @@ package cmd
 
 import "github.com/google/gopacket"
 
-// ipInfo stores an ip address of a device on the network
-type ipInfo struct {
+// AddrInfo stores an ip or mac address of a device on the network
+type AddrInfo struct {
 	timeInfo
 	ip      gopacket.Endpoint
 	packets int
