@@ -75,7 +75,7 @@ func printVlans(w io.Writer, device *deviceInfo) {
 	}
 	for _, vlan := range device.vlans {
 		// print VLAN info
-		fmt.Fprintf(w, vlanFmt, vlan.vlan, vlan.getAge(),
+		fmt.Fprintf(w, vlanFmt, vlan.ID, vlan.getAge(),
 			vlan.packets)
 	}
 }

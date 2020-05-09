@@ -8,7 +8,7 @@ import (
 type deviceInfo struct {
 	timeInfo
 	mac       gopacket.Endpoint
-	vlans     map[uint16]*vlanInfo
+	vlans     map[uint16]*vnetInfo
 	vxlans    map[uint32]*vnetInfo
 	geneves   map[uint32]*vnetInfo
 	powerline powerlineInfo
@@ -26,8 +26,8 @@ func (d *deviceInfo) addVlan(vlanID uint16) {
 	// add entry if it does not exist
 	if d.vlans[vlanID] == nil {
 		debug("Adding new vlan to an entry")
-		vlan := vlanInfo{}
-		vlan.vlan = vlanID
+		vlan := vnetInfo{}
+		vlan.ID = uint32(vlanID)
 		d.vlans[vlanID] = &vlan
 	}
 }

@@ -30,7 +30,7 @@ func (d *deviceMap) add(linkAddr gopacket.Endpoint) *deviceInfo {
 		debug("Adding new entry")
 		device := deviceInfo{}
 		device.mac = linkAddr
-		device.vlans = make(map[uint16]*vlanInfo)
+		device.vlans = make(map[uint16]*vnetInfo)
 		device.vxlans = make(map[uint32]*vnetInfo)
 		device.geneves = make(map[uint32]*vnetInfo)
 		d.m[linkAddr] = &device
