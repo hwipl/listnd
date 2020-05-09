@@ -70,10 +70,7 @@ func printPowerline(w io.Writer, device *deviceInfo) {
 func printVlans(w io.Writer, device *deviceInfo) {
 	vlanFmt := "    VLAN: %-38d (age: %.f, pkts: %d)\n"
 
-	if len(device.vlans) == 0 {
-		return
-	}
-	for _, vlan := range device.vlans {
+	for _, vlan := range device.vlans.m {
 		// print VLAN info
 		fmt.Fprintf(w, vlanFmt, vlan.ID, vlan.getAge(),
 			vlan.packets)
@@ -111,7 +108,7 @@ func printProperties(w io.Writer, device *deviceInfo) {
 		!device.dhcp.isEnabled() &&
 		!device.router.isEnabled() &&
 		!device.powerline.isEnabled() &&
-		len(device.vlans) == 0 &&
+		len(device.vlans.m) == 0 &&
 		len(device.vxlans.m) == 0 &&
 		len(device.geneves.m) == 0 {
 		return
