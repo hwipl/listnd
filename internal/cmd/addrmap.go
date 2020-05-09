@@ -5,6 +5,19 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
+// isValidAddr checks if address is valid
+func isValidAddr(address gopacket.Endpoint) bool {
+	switch address.EndpointType() {
+	case layers.EndpointIPv4, layers.EndpointIPv6:
+		if endpointIsValidIP(address) {
+			return true
+		}
+	case layers.EndpointMAC:
+		return true
+	}
+	return false
+}
+
 // AddrMap stores mappings of ip/mac addresses to address info
 type AddrMap struct {
 	m map[gopacket.Endpoint]*AddrInfo
@@ -13,15 +26,7 @@ type AddrMap struct {
 // Add adds address to the AddrMap and returns the address info
 func (a *AddrMap) Add(address gopacket.Endpoint) *AddrInfo {
 	// check if address is valid
-	switch address.EndpointType() {
-	case layers.EndpointIPv4, layers.EndpointIPv6:
-		if !endpointIsValidIP(address) {
-			return nil
-		}
-	case layers.EndpointMAC:
-		break
-	default:
-		// non IP/MAC addresses are not expected
+	if !isValidAddr(address) {
 		return nil
 	}
 
@@ -46,4 +51,18 @@ func (a *AddrMap) Get(address gopacket.Endpoint) *AddrInfo {
 		return nil
 	}
 	return a.m[address]
+}
+
+// Del removes the address info with address
+func (a *AddrMap) Del(address gopacket.Endpoint) {
+	// check if address is valid
+	if !isValidAddr(address) {
+		return
+	}
+
+	// remove entry if it exists
+	if a.m[address] != nil {
+		debug("Deleting address entry")
+		delete(a.m, address)
+	}
 }
