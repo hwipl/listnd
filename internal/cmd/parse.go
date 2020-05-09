@@ -44,7 +44,7 @@ func updateStatistics(packet gopacket.Packet) {
 		device.setTimestamp(timestamp)
 
 		// ip
-		if ip := device.ips[netSrc]; ip != nil {
+		if ip := device.ips.Get(netSrc); ip != nil {
 			ip.Packets++
 			ip.setTimestamp(timestamp)
 		}

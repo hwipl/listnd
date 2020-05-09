@@ -17,7 +17,7 @@ type deviceInfo struct {
 	dhcp      dhcpInfo
 	router    routerInfo
 	packets   int
-	ips       map[gopacket.Endpoint]*AddrInfo
+	ips       AddrMap
 	macPeers  map[gopacket.Endpoint]*AddrInfo
 	ipPeers   map[gopacket.Endpoint]*AddrInfo
 }
@@ -57,32 +57,12 @@ func (d *deviceInfo) addGeneve(vni uint32) {
 
 // addIP adds an ip address to a device
 func (d *deviceInfo) addIP(netAddr gopacket.Endpoint) {
-	// make sure address is valid
-	if !endpointIsValidIP(netAddr) {
-		return
-	}
-
-	// add entry if it does not exist
-	if d.ips[netAddr] == nil {
-		debug("Adding new ip to an entry")
-		ip := AddrInfo{}
-		ip.Addr = netAddr
-		d.ips[netAddr] = &ip
-	}
+	d.ips.Add(netAddr)
 }
 
 // delIP removes an ip address from a device
 func (d *deviceInfo) delIP(netAddr gopacket.Endpoint) {
-	// make sure address is valid
-	if !endpointIsValidIP(netAddr) {
-		return
-	}
-
-	// remove entry if it exists
-	if d.ips[netAddr] != nil {
-		debug("Deleting ip from an entry")
-		delete(d.ips, netAddr)
-	}
+	d.ips.Del(netAddr)
 }
 
 // addPeer adds a peer address to a device

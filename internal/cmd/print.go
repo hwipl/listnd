@@ -151,7 +151,7 @@ func printIps(w io.Writer, device *deviceInfo) {
 	var unicasts []*AddrInfo
 
 	// search for ucast and mcast addresses
-	for ip, info := range device.ips {
+	for ip, info := range device.ips.m {
 		if net.IP(ip.Raw()).IsMulticast() {
 			multicasts = append(multicasts, info)
 			continue
