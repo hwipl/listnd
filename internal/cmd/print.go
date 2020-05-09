@@ -139,7 +139,7 @@ func printProperties(w io.Writer, device *deviceInfo) {
 func _printIps(w io.Writer, ips []*AddrInfo) {
 	ipFmt := "    IP: %-40s (age: %.f, pkts: %d)\n"
 	for _, info := range ips {
-		fmt.Fprintf(w, ipFmt, info.ip, info.getAge(), info.packets)
+		fmt.Fprintf(w, ipFmt, info.Addr, info.getAge(), info.packets)
 	}
 }
 

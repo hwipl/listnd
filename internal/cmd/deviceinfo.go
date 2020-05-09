@@ -84,7 +84,7 @@ func (d *deviceInfo) addIP(netAddr gopacket.Endpoint) {
 	if d.ips[netAddr] == nil {
 		debug("Adding new ip to an entry")
 		ip := AddrInfo{}
-		ip.ip = netAddr
+		ip.Addr = netAddr
 		d.ips[netAddr] = &ip
 	}
 }
@@ -111,14 +111,14 @@ func (d *deviceInfo) addPeer(addr gopacket.Endpoint) {
 			debug("Adding new mac peer to an entry")
 			// TODO: rename to addrInfo? add macInfo?
 			ip := AddrInfo{}
-			ip.ip = addr
+			ip.Addr = addr
 			d.macPeers[addr] = &ip
 		}
 	case layers.EndpointIPv4, layers.EndpointIPv6:
 		if d.ipPeers[addr] == nil {
 			debug("Adding new ip peer to an entry")
 			ip := AddrInfo{}
-			ip.ip = addr
+			ip.Addr = addr
 			d.ipPeers[addr] = &ip
 		}
 	}

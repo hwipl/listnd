@@ -5,6 +5,6 @@ import "github.com/google/gopacket"
 // AddrInfo stores an ip or mac address of a device on the network
 type AddrInfo struct {
 	timeInfo
-	ip      gopacket.Endpoint
+	Addr    gopacket.Endpoint
 	packets int
 }
