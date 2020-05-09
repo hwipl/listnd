@@ -36,7 +36,7 @@ func parseMld(packet gopacket.Packet) {
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
 		dev.addIP(netSrc)
-		dev.delIP(layers.NewIPEndpoint(done.MulticastAddress))
+		dev.ips.Del(layers.NewIPEndpoint(done.MulticastAddress))
 		return
 	}
 
@@ -85,7 +85,7 @@ func parseMld(packet gopacket.Packet) {
 					v.MulticastAddress))
 			case mldv2IsIn, mldv2ToIn:
 				// remove IP
-				dev.delIP(layers.NewIPEndpoint(
+				dev.ips.Del(layers.NewIPEndpoint(
 					v.MulticastAddress))
 			}
 		}

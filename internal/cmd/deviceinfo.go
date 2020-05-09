@@ -60,11 +60,6 @@ func (d *deviceInfo) addIP(netAddr gopacket.Endpoint) {
 	d.ips.Add(netAddr)
 }
 
-// delIP removes an ip address from a device
-func (d *deviceInfo) delIP(netAddr gopacket.Endpoint) {
-	d.ips.Del(netAddr)
-}
-
 // addPeer adds a peer address to a device
 func (d *deviceInfo) addPeer(addr gopacket.Endpoint) {
 	switch addr.EndpointType() {

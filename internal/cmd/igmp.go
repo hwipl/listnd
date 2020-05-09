@@ -41,8 +41,7 @@ func parseIgmp(packet gopacket.Packet) {
 		case layers.IGMPLeaveGroup:
 			debug("IGMPv1or2 Leave Group")
 			// remove IP
-			dev.delIP(layers.NewIPEndpoint(
-				igmp.GroupAddress))
+			dev.ips.Del(layers.NewIPEndpoint(igmp.GroupAddress))
 		}
 	}
 
@@ -67,7 +66,7 @@ func parseIgmp(packet gopacket.Packet) {
 						v.MulticastAddress))
 				case layers.IGMPIsIn, layers.IGMPToIn:
 					// remove IP
-					dev.delIP(layers.NewIPEndpoint(
+					dev.ips.Del(layers.NewIPEndpoint(
 						v.MulticastAddress))
 				}
 			}
