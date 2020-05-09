@@ -78,8 +78,8 @@ func parsePeers(packet gopacket.Packet) {
 	_, netDst := getIps(packet)
 
 	dev := devices.Get(linkSrc)
-	dev.addPeer(linkDst)
-	dev.addPeer(netDst)
+	dev.macPeers.Add(linkDst)
+	dev.ipPeers.Add(netDst)
 }
 
 // parse parses the packet

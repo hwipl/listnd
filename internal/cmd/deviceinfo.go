@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 )
 
 // deviceInfo is a device found on the network
@@ -52,17 +51,5 @@ func (d *deviceInfo) addGeneve(vni uint32) {
 		geneve := geneveInfo{}
 		geneve.geneve = vni
 		d.geneves[vni] = &geneve
-	}
-}
-
-// addPeer adds a peer address to a device
-func (d *deviceInfo) addPeer(addr gopacket.Endpoint) {
-	switch addr.EndpointType() {
-	case layers.EndpointMAC:
-		debug("Adding new mac peer to an entry")
-		d.macPeers.Add(addr)
-	case layers.EndpointIPv4, layers.EndpointIPv6:
-		debug("Adding new ip peer to an entry")
-		d.ipPeers.Add(addr)
 	}
 }
