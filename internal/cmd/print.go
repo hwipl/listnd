@@ -103,7 +103,7 @@ func printGeneves(w io.Writer, device *deviceInfo) {
 	}
 	for _, geneve := range device.geneves {
 		// print Geneve info
-		fmt.Fprintf(w, geneveFmt, geneve.geneve, geneve.getAge(),
+		fmt.Fprintf(w, geneveFmt, geneve.ID, geneve.getAge(),
 			geneve.packets)
 	}
 }

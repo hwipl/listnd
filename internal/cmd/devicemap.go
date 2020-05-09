@@ -32,7 +32,7 @@ func (d *deviceMap) add(linkAddr gopacket.Endpoint) *deviceInfo {
 		device.mac = linkAddr
 		device.vlans = make(map[uint16]*vlanInfo)
 		device.vxlans = make(map[uint32]*vxlanInfo)
-		device.geneves = make(map[uint32]*geneveInfo)
+		device.geneves = make(map[uint32]*vnetInfo)
 		d.m[linkAddr] = &device
 	}
 	return d.m[linkAddr]
