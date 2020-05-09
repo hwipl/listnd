@@ -50,7 +50,7 @@ func updateStatistics(packet gopacket.Packet) {
 		}
 
 		// mac peers
-		if peer := device.macPeers[linkDst]; peer != nil {
+		if peer := device.macPeers.Get(linkDst); peer != nil {
 			peer.Packets++
 			peer.setTimestamp(timestamp)
 		}

@@ -18,7 +18,7 @@ type deviceInfo struct {
 	router    routerInfo
 	packets   int
 	ips       AddrMap
-	macPeers  map[gopacket.Endpoint]*AddrInfo
+	macPeers  AddrMap
 	ipPeers   map[gopacket.Endpoint]*AddrInfo
 }
 
@@ -59,13 +59,8 @@ func (d *deviceInfo) addGeneve(vni uint32) {
 func (d *deviceInfo) addPeer(addr gopacket.Endpoint) {
 	switch addr.EndpointType() {
 	case layers.EndpointMAC:
-		if d.macPeers[addr] == nil {
-			debug("Adding new mac peer to an entry")
-			// TODO: rename to addrInfo? add macInfo?
-			ip := AddrInfo{}
-			ip.Addr = addr
-			d.macPeers[addr] = &ip
-		}
+		debug("Adding new mac peer to an entry")
+		d.macPeers.Add(addr)
 	case layers.EndpointIPv4, layers.EndpointIPv6:
 		if d.ipPeers[addr] == nil {
 			debug("Adding new ip peer to an entry")
