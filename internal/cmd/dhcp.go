@@ -35,7 +35,7 @@ func parseDhcp(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
-		dev.addIP(netSrc)
+		dev.ips.Add(netSrc)
 		timestamp := packet.Metadata().Timestamp
 
 		// parse message type to determine if server or client

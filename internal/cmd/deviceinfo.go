@@ -55,11 +55,6 @@ func (d *deviceInfo) addGeneve(vni uint32) {
 	}
 }
 
-// addIP adds an ip address to a device
-func (d *deviceInfo) addIP(netAddr gopacket.Endpoint) {
-	d.ips.Add(netAddr)
-}
-
 // addPeer adds a peer address to a device
 func (d *deviceInfo) addPeer(addr gopacket.Endpoint) {
 	switch addr.EndpointType() {
