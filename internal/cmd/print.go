@@ -101,35 +101,6 @@ func _printIps(w io.Writer, ips []*AddrInfo) {
 	}
 }
 
-// printIps prints ip addresses in device table
-func printIps(w io.Writer, device *deviceInfo) {
-	multicastHeader := "  Multicast Addresses:\n"
-	unicastHeader := "  Unicast Addresses:\n"
-	var multicasts []*AddrInfo
-	var unicasts []*AddrInfo
-
-	// search for ucast and mcast addresses
-	for ip, info := range device.ips.m {
-		if net.IP(ip.Raw()).IsMulticast() {
-			multicasts = append(multicasts, info)
-			continue
-		}
-		unicasts = append(unicasts, info)
-	}
-
-	// print unicast addresses
-	if len(unicasts) > 0 {
-		fmt.Fprintf(w, unicastHeader)
-		_printIps(w, unicasts)
-	}
-
-	// print multicast addresses
-	if len(multicasts) > 0 {
-		fmt.Fprintf(w, multicastHeader)
-		_printIps(w, multicasts)
-	}
-}
-
 // printPeers prints peer addresses in device table
 func printPeers(w io.Writer, device *deviceInfo) {
 	macPeersHeader := "  MAC Peers:\n"
@@ -175,7 +146,7 @@ func printDevices(w io.Writer) {
 			device.packets)
 		// print properties and ips
 		printProperties(w, device)
-		printIps(w, device)
+		device.ips.Print(w)
 		printPeers(w, device)
 		fmt.Fprintln(w)
 	}
