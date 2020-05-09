@@ -56,7 +56,7 @@ func updateStatistics(packet gopacket.Packet) {
 		}
 
 		// ip peers
-		if peer := device.ipPeers[netDst]; peer != nil {
+		if peer := device.ipPeers.Get(netDst); peer != nil {
 			peer.Packets++
 			peer.setTimestamp(timestamp)
 		}

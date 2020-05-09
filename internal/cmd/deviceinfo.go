@@ -19,7 +19,7 @@ type deviceInfo struct {
 	packets   int
 	ips       AddrMap
 	macPeers  AddrMap
-	ipPeers   map[gopacket.Endpoint]*AddrInfo
+	ipPeers   AddrMap
 }
 
 // addVlan adds a vlan to a device
@@ -62,11 +62,7 @@ func (d *deviceInfo) addPeer(addr gopacket.Endpoint) {
 		debug("Adding new mac peer to an entry")
 		d.macPeers.Add(addr)
 	case layers.EndpointIPv4, layers.EndpointIPv6:
-		if d.ipPeers[addr] == nil {
-			debug("Adding new ip peer to an entry")
-			ip := AddrInfo{}
-			ip.Addr = addr
-			d.ipPeers[addr] = &ip
-		}
+		debug("Adding new ip peer to an entry")
+		d.ipPeers.Add(addr)
 	}
 }

@@ -186,9 +186,9 @@ func printPeers(w io.Writer, device *deviceInfo) {
 		_printIps(w, macs)
 	}
 
-	if len(device.ipPeers) > 0 {
+	if len(device.ipPeers.m) > 0 {
 		var ips []*AddrInfo
-		for _, info := range device.ipPeers {
+		for _, info := range device.ipPeers.m {
 			ips = append(ips, info)
 		}
 		fmt.Fprintf(w, ipPeersHeader)
