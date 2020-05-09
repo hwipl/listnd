@@ -45,19 +45,19 @@ func updateStatistics(packet gopacket.Packet) {
 
 		// ip
 		if ip := device.ips[netSrc]; ip != nil {
-			ip.packets++
+			ip.Packets++
 			ip.setTimestamp(timestamp)
 		}
 
 		// mac peers
 		if peer := device.macPeers[linkDst]; peer != nil {
-			peer.packets++
+			peer.Packets++
 			peer.setTimestamp(timestamp)
 		}
 
 		// ip peers
 		if peer := device.ipPeers[netDst]; peer != nil {
-			peer.packets++
+			peer.Packets++
 			peer.setTimestamp(timestamp)
 		}
 	}

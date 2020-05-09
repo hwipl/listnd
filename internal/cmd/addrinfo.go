@@ -6,5 +6,5 @@ import "github.com/google/gopacket"
 type AddrInfo struct {
 	timeInfo
 	Addr    gopacket.Endpoint
-	packets int
+	Packets int
 }
