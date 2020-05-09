@@ -98,10 +98,7 @@ func printVxlans(w io.Writer, device *deviceInfo) {
 func printGeneves(w io.Writer, device *deviceInfo) {
 	geneveFmt := "    Geneve: %-36d (age: %.f, pkts: %d)\n"
 
-	if len(device.geneves) == 0 {
-		return
-	}
-	for _, geneve := range device.geneves {
+	for _, geneve := range device.geneves.m {
 		// print Geneve info
 		fmt.Fprintf(w, geneveFmt, geneve.ID, geneve.getAge(),
 			geneve.packets)
@@ -119,7 +116,7 @@ func printProperties(w io.Writer, device *deviceInfo) {
 		!device.powerline.isEnabled() &&
 		len(device.vlans) == 0 &&
 		len(device.vxlans) == 0 &&
-		len(device.geneves) == 0 {
+		len(device.geneves.m) == 0 {
 		return
 	}
 	// start with header

@@ -10,7 +10,7 @@ type deviceInfo struct {
 	mac       gopacket.Endpoint
 	vlans     map[uint16]*vnetInfo
 	vxlans    map[uint32]*vnetInfo
-	geneves   map[uint32]*vnetInfo
+	geneves   vnetMap
 	powerline powerlineInfo
 	bridge    bridgeInfo
 	dhcp      dhcpInfo
@@ -40,16 +40,5 @@ func (d *deviceInfo) addVxlan(vni uint32) {
 		vxlan := vnetInfo{}
 		vxlan.ID = vni
 		d.vxlans[vni] = &vxlan
-	}
-}
-
-// addGeneve adds a geneve to a device
-func (d *deviceInfo) addGeneve(vni uint32) {
-	// add entry if it does not exist
-	if d.geneves[vni] == nil {
-		debug("Adding new geneve to an entry")
-		geneve := vnetInfo{}
-		geneve.ID = vni
-		d.geneves[vni] = &geneve
 	}
 }
