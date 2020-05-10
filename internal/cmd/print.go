@@ -93,35 +93,23 @@ func printProperties(w io.Writer, device *deviceInfo) {
 	device.geneves.Print(w)
 }
 
-// _printIps prints ip information in device table
-func _printIps(w io.Writer, ips []*AddrInfo) {
-	ipFmt := "    IP: %-40s (age: %.f, pkts: %d)\n"
-	for _, info := range ips {
-		fmt.Fprintf(w, ipFmt, info.Addr, info.getAge(), info.Packets)
-	}
-}
-
 // printPeers prints peer addresses in device table
 func printPeers(w io.Writer, device *deviceInfo) {
 	macPeersHeader := "  MAC Peers:\n"
 	ipPeersHeader := "  IP Peers:\n"
 
 	if len(device.macPeers.m) > 0 {
-		var macs []*AddrInfo
-		for _, info := range device.macPeers.m {
-			macs = append(macs, info)
-		}
 		fmt.Fprintf(w, macPeersHeader)
-		_printIps(w, macs)
+		for _, info := range device.macPeers.m {
+			fmt.Fprintf(w, "    %s\n", info)
+		}
 	}
 
 	if len(device.ipPeers.m) > 0 {
-		var ips []*AddrInfo
-		for _, info := range device.ipPeers.m {
-			ips = append(ips, info)
-		}
 		fmt.Fprintf(w, ipPeersHeader)
-		_printIps(w, ips)
+		for _, info := range device.ipPeers.m {
+			fmt.Fprintf(w, "    %s\n", info)
+		}
 	}
 }
 
