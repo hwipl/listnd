@@ -134,7 +134,8 @@ func printDevices(w io.Writer) {
 			device.packets)
 		// print properties and ips
 		printProperties(w, device)
-		device.ips.Print(w)
+		device.ucasts.Print(w)
+		device.mcasts.Print(w)
 		printPeers(w, device)
 		fmt.Fprintln(w)
 	}

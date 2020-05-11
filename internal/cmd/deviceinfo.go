@@ -16,7 +16,8 @@ type deviceInfo struct {
 	dhcp      dhcpInfo
 	router    routerInfo
 	packets   int
-	ips       AddrMap
+	ucasts    AddrMap
+	mcasts    AddrMap
 	macPeers  AddrMap
 	ipPeers   AddrMap
 }

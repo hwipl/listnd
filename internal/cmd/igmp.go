@@ -17,7 +17,7 @@ func parseIgmp(packet gopacket.Packet) {
 	// add source IP to device
 	netSrc, _ := getIps(packet)
 	dev := devices.Get(linkSrc)
-	dev.ips.Add(netSrc)
+	dev.ucasts.Add(netSrc)
 
 	// igmp v1 or v2
 	if igmp, ok := igmpLayer.(*layers.IGMPv1or2); ok {
@@ -31,17 +31,17 @@ func parseIgmp(packet gopacket.Packet) {
 		case layers.IGMPMembershipReportV1:
 			debug("IGMPv1 Membership Report")
 			// add IP
-			dev.ips.Add(layers.NewIPEndpoint(
+			dev.mcasts.Add(layers.NewIPEndpoint(
 				igmp.GroupAddress))
 		case layers.IGMPMembershipReportV2:
 			debug("IGMPv2 Membership Report")
 			// add IP
-			dev.ips.Add(layers.NewIPEndpoint(
+			dev.mcasts.Add(layers.NewIPEndpoint(
 				igmp.GroupAddress))
 		case layers.IGMPLeaveGroup:
 			debug("IGMPv1or2 Leave Group")
 			// remove IP
-			dev.ips.Del(layers.NewIPEndpoint(igmp.GroupAddress))
+			dev.mcasts.Del(layers.NewIPEndpoint(igmp.GroupAddress))
 		}
 	}
 
@@ -62,11 +62,11 @@ func parseIgmp(packet gopacket.Packet) {
 				switch v.Type {
 				case layers.IGMPIsEx, layers.IGMPToEx:
 					// add IP
-					dev.ips.Add(layers.NewIPEndpoint(
+					dev.mcasts.Add(layers.NewIPEndpoint(
 						v.MulticastAddress))
 				case layers.IGMPIsIn, layers.IGMPToIn:
 					// remove IP
-					dev.ips.Del(layers.NewIPEndpoint(
+					dev.mcasts.Del(layers.NewIPEndpoint(
 						v.MulticastAddress))
 				}
 			}

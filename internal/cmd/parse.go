@@ -43,8 +43,8 @@ func updateStatistics(packet gopacket.Packet) {
 		device.packets++
 		device.setTimestamp(timestamp)
 
-		// ip
-		if ip := device.ips.Get(netSrc); ip != nil {
+		// unicast ips
+		if ip := device.ucasts.Get(netSrc); ip != nil {
 			ip.Packets++
 			ip.setTimestamp(timestamp)
 		}

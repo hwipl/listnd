@@ -21,7 +21,7 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
-		dev.ips.Add(netSrc)
+		dev.ucasts.Add(netSrc)
 		dev.router.enable()
 		dev.router.setTimestamp(packet.Metadata().Timestamp)
 		return
@@ -35,8 +35,8 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
-		dev.ips.Add(netSrc)
-		dev.ips.Del(layers.NewIPEndpoint(done.MulticastAddress))
+		dev.ucasts.Add(netSrc)
+		dev.mcasts.Del(layers.NewIPEndpoint(done.MulticastAddress))
 		return
 	}
 
@@ -48,8 +48,8 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
-		dev.ips.Add(netSrc)
-		dev.ips.Add(layers.NewIPEndpoint(report.MulticastAddress))
+		dev.ucasts.Add(netSrc)
+		dev.mcasts.Add(layers.NewIPEndpoint(report.MulticastAddress))
 		return
 	}
 
@@ -61,7 +61,7 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
-		dev.ips.Add(netSrc)
+		dev.ucasts.Add(netSrc)
 		dev.router.enable()
 		dev.router.setTimestamp(packet.Metadata().Timestamp)
 		return
@@ -74,18 +74,18 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
-		dev.ips.Add(netSrc)
+		dev.ucasts.Add(netSrc)
 
 		// parse multicast addresses and add/remove them
 		for _, v := range report.MulticastAddressRecords {
 			switch v.RecordType {
 			case mldv2IsEx, mldv2ToEx:
 				// add IP
-				dev.ips.Add(layers.NewIPEndpoint(
+				dev.mcasts.Add(layers.NewIPEndpoint(
 					v.MulticastAddress))
 			case mldv2IsIn, mldv2ToIn:
 				// remove IP
-				dev.ips.Del(layers.NewIPEndpoint(
+				dev.mcasts.Del(layers.NewIPEndpoint(
 					v.MulticastAddress))
 			}
 		}
