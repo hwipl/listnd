@@ -93,26 +93,6 @@ func printProperties(w io.Writer, device *deviceInfo) {
 	device.geneves.Print(w)
 }
 
-// printPeers prints peer addresses in device table
-func printPeers(w io.Writer, device *deviceInfo) {
-	macPeersHeader := "  MAC Peers:\n"
-	ipPeersHeader := "  IP Peers:\n"
-
-	if len(device.macPeers.m) > 0 {
-		fmt.Fprintf(w, macPeersHeader)
-		for _, info := range device.macPeers.m {
-			fmt.Fprintf(w, "    %s\n", info)
-		}
-	}
-
-	if len(device.ipPeers.m) > 0 {
-		fmt.Fprintf(w, ipPeersHeader)
-		for _, info := range device.ipPeers.m {
-			fmt.Fprintf(w, "    %s\n", info)
-		}
-	}
-}
-
 // printDevices prints the device table
 func printDevices(w io.Writer) {
 	devicesFmt := "===================================" +
@@ -136,7 +116,8 @@ func printDevices(w io.Writer) {
 		printProperties(w, device)
 		device.ucasts.Print(w)
 		device.mcasts.Print(w)
-		printPeers(w, device)
+		device.macPeers.Print(w)
+		device.ipPeers.Print(w)
 		fmt.Fprintln(w)
 	}
 

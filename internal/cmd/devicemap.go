@@ -32,6 +32,8 @@ func (d *deviceMap) add(linkAddr gopacket.Endpoint) *deviceInfo {
 		device.mac = linkAddr
 		device.ucasts.name = "Unicast Addresses"
 		device.mcasts.name = "Multicast Addresses"
+		device.macPeers.name = "MAC Peers"
+		device.ipPeers.name = "IP Peers"
 		d.m[linkAddr] = &device
 	}
 	return d.m[linkAddr]
