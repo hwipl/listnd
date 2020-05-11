@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"net"
 	"os"
 	"time"
 )
@@ -12,19 +11,6 @@ import (
 func debug(text string) {
 	if debugMode {
 		fmt.Println(text)
-	}
-}
-
-// printRouter prints router information in device table
-func printRouter(w io.Writer, device *deviceInfo) {
-	prefixFmt := "      Prefix: %-34s (age: %.f)\n"
-
-	device.router.propInfo.Print(w)
-	for _, prefix := range device.router.getPrefixes() {
-		pLen := uint8(prefix.prefix.Data[0])
-		p := net.IP(prefix.prefix.Data[14:])
-		ps := fmt.Sprintf("%v/%v", p, pLen)
-		fmt.Fprintf(w, prefixFmt, ps, prefix.getAge())
 	}
 }
 
@@ -48,7 +34,8 @@ func printProperties(w io.Writer, device *deviceInfo) {
 	// print device properties
 	device.bridge.Print(w)
 	device.dhcp.Print(w)
-	printRouter(w, device)
+	device.router.Print(w)
+	device.prefixes.Print(w)
 	device.powerline.Print(w)
 	device.vlans.Print(w)
 	device.vxlans.Print(w)
