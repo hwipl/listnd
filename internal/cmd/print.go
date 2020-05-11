@@ -75,9 +75,9 @@ func printProperties(w io.Writer, device *deviceInfo) {
 		!device.dhcp.isEnabled() &&
 		!device.router.isEnabled() &&
 		!device.powerline.isEnabled() &&
-		len(device.vlans.m) == 0 &&
-		len(device.vxlans.m) == 0 &&
-		len(device.geneves.m) == 0 {
+		device.vlans.Len() == 0 &&
+		device.vxlans.Len() == 0 &&
+		device.geneves.Len() == 0 {
 		return
 	}
 	// start with header

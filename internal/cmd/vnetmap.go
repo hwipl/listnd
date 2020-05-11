@@ -30,6 +30,11 @@ func (v *vnetMap) Get(id uint32) *vnetInfo {
 	return v.m[id]
 }
 
+// Len returns the number of vnets in the vnet map
+func (v *vnetMap) Len() int {
+	return len(v.m)
+}
+
 // Print prints the vnet map to w
 func (v *vnetMap) Print(w io.Writer) {
 	for _, vnet := range v.m {
