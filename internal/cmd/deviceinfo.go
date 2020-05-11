@@ -11,9 +11,9 @@ type deviceInfo struct {
 	vlans     vnetMap
 	vxlans    vnetMap
 	geneves   vnetMap
-	powerline powerlineInfo
-	bridge    bridgeInfo
-	dhcp      dhcpInfo
+	powerline propInfo
+	bridge    propInfo
+	dhcp      propInfo
 	router    routerInfo
 	packets   int
 	ucasts    AddrMap
