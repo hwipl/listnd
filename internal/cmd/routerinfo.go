@@ -5,7 +5,6 @@ import "github.com/google/gopacket/layers"
 // routerInfo stores router information of a device on the network
 type routerInfo struct {
 	propInfo
-	timeInfo
 	prefixes []*prefixInfo
 }
 

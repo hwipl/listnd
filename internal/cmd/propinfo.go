@@ -2,6 +2,7 @@ package cmd
 
 // propInfo is a device property
 type propInfo struct {
+	timeInfo
 	enabled bool
 }
 
