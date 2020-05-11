@@ -74,7 +74,7 @@ MAC: 5c:49:79:fe:dc:ba                           (age: 1, pkts: 3317)
     Router: true                                 (age: 122)
     Powerline: true                              (age: 2)
   Unicast Addresses:
-    IP: 2001:c0ff:eec0f:fee0:5e49:79ff:fefe:dcba  (age: 93, pkts: 1)
+    IP: 2001:c0ff:eec0:ffee:5e49:79ff:fefe:dcba  (age: 93, pkts: 1)
     IP: fe80::5e49:79ff:fefe:dcba                (age: 52, pkts: 1)
     IP: 192.168.1.1                              (age: 87, pkts: 12)
   Multicast Addresses:
