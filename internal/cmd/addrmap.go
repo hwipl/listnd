@@ -40,7 +40,8 @@ func isValidAddr(address gopacket.Endpoint) bool {
 
 // AddrMap stores mappings of ip/mac addresses to address info
 type AddrMap struct {
-	m map[gopacket.Endpoint]*AddrInfo
+	name string
+	m    map[gopacket.Endpoint]*AddrInfo
 }
 
 // Add adds address to the AddrMap and returns the address info
@@ -89,32 +90,10 @@ func (a *AddrMap) Del(address gopacket.Endpoint) {
 
 // Print prints the address map to w
 func (a *AddrMap) Print(w io.Writer) {
-	multicastHeader := "  Multicast Addresses:\n"
-	unicastHeader := "  Unicast Addresses:\n"
-	var multicasts []*AddrInfo
-	var unicasts []*AddrInfo
-
-	// search for ucast and mcast addresses
-	for ip, info := range a.m {
-		if net.IP(ip.Raw()).IsMulticast() {
-			multicasts = append(multicasts, info)
-			continue
-		}
-		unicasts = append(unicasts, info)
-	}
-
-	// print unicast addresses
-	if len(unicasts) > 0 {
-		fmt.Fprintf(w, unicastHeader)
-		for _, addr := range unicasts {
-			fmt.Fprintf(w, "    %s\n", addr)
-		}
-	}
-
-	// print multicast addresses
-	if len(multicasts) > 0 {
-		fmt.Fprintf(w, multicastHeader)
-		for _, addr := range multicasts {
+	// print addresses
+	if len(a.m) > 0 {
+		fmt.Fprintf(w, "  %s:\n", a.name)
+		for _, addr := range a.m {
 			fmt.Fprintf(w, "    %s\n", addr)
 		}
 	}

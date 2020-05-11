@@ -30,6 +30,8 @@ func (d *deviceMap) add(linkAddr gopacket.Endpoint) *deviceInfo {
 		debug("Adding new entry")
 		device := deviceInfo{}
 		device.mac = linkAddr
+		device.ucasts.name = "Unicast Addresses"
+		device.mcasts.name = "Multicast Addresses"
 		d.m[linkAddr] = &device
 	}
 	return d.m[linkAddr]
