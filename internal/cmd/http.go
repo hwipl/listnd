@@ -4,7 +4,7 @@ import "net/http"
 
 // handleHTTP prints the device table to http clients
 func handleHTTP(w http.ResponseWriter, r *http.Request) {
-	printDevices(w)
+	devices.Print(w)
 }
 
 // startHTTP starts the http server

@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"io"
 	"sync"
 
 	"github.com/google/gopacket"
@@ -52,4 +54,18 @@ func (d *deviceMap) Get(linkAddr gopacket.Endpoint) *deviceInfo {
 		return nil
 	}
 	return d.m[linkAddr]
+}
+
+// Print prints all devices to w
+func (d *deviceMap) Print(w io.Writer) {
+	devicesFmt := "===================================" +
+		"===================================\n" +
+		"Devices: %-39d (pkts: %d)\n" +
+		"===================================" +
+		"===================================\n"
+	fmt.Fprintf(w, devicesFmt, len(devices.m), devices.packets)
+	for _, device := range devices.m {
+		device.Print(w)
+		fmt.Fprintln(w)
+	}
 }
