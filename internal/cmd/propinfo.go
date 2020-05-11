@@ -1,8 +1,14 @@
 package cmd
 
+import (
+	"fmt"
+	"io"
+)
+
 // propInfo is a device property
 type propInfo struct {
 	timeInfo
+	name    string
 	enabled bool
 }
 
@@ -22,4 +28,14 @@ func (p *propInfo) isEnabled() bool {
 		return true
 	}
 	return false
+}
+
+// Print prints the property info to w
+func (p *propInfo) Print(w io.Writer) {
+	if !p.enabled {
+		return
+	}
+	propFmt := "    %s: %-*t (age: %.f)\n"
+	padLen := 42 - len(p.name)
+	fmt.Fprintf(w, propFmt, p.name, padLen, p.enabled, p.getAge())
 }
