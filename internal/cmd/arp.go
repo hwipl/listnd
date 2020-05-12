@@ -24,6 +24,6 @@ func parseArp(packet gopacket.Packet) {
 
 		// add to table
 		dev := devices.Add(linkSrc)
-		dev.ucasts.Add(netSrc)
+		dev.UCasts.Add(netSrc)
 	}
 }

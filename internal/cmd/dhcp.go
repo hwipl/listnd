@@ -23,8 +23,8 @@ func parseDhcp(packet gopacket.Packet) {
 			debug("DHCP Reply")
 			// mark this device as dhcp server
 			dev := devices.Get(linkSrc)
-			dev.dhcp.enable()
-			dev.dhcp.setTimestamp(packet.Metadata().Timestamp)
+			dev.DHCP.enable()
+			dev.DHCP.setTimestamp(packet.Metadata().Timestamp)
 		}
 	}
 
@@ -35,7 +35,7 @@ func parseDhcp(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
-		dev.ucasts.Add(netSrc)
+		dev.UCasts.Add(netSrc)
 		timestamp := packet.Metadata().Timestamp
 
 		// parse message type to determine if server or client
@@ -47,8 +47,8 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeRequest:
 			debug("DHCPv6 Request")
 			// server
-			dev.dhcp.enable()
-			dev.dhcp.setTimestamp(timestamp)
+			dev.DHCP.enable()
+			dev.DHCP.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeConfirm:
 			debug("DHCPv6 Confirm")
 		case layers.DHCPv6MsgTypeRenew:
@@ -58,8 +58,8 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeReply:
 			debug("DHCPv6 Reply")
 			// server
-			dev.dhcp.enable()
-			dev.dhcp.setTimestamp(timestamp)
+			dev.DHCP.enable()
+			dev.DHCP.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeRelease:
 			debug("DHCPv6 Release")
 		case layers.DHCPv6MsgTypeDecline:
@@ -67,8 +67,8 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeReconfigure:
 			debug("DHCPv6 Reconfigure")
 			// server
-			dev.dhcp.enable()
-			dev.dhcp.setTimestamp(timestamp)
+			dev.DHCP.enable()
+			dev.DHCP.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeInformationRequest:
 			debug("DHCPv6 Information Request")
 		case layers.DHCPv6MsgTypeRelayForward:
@@ -76,8 +76,8 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeRelayReply:
 			debug("DHCPv6 Relay Reply")
 			// server
-			dev.dhcp.enable()
-			dev.dhcp.setTimestamp(timestamp)
+			dev.DHCP.enable()
+			dev.DHCP.setTimestamp(timestamp)
 		}
 	}
 }

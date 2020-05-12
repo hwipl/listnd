@@ -21,9 +21,9 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
-		dev.ucasts.Add(netSrc)
-		dev.router.enable()
-		dev.router.setTimestamp(packet.Metadata().Timestamp)
+		dev.UCasts.Add(netSrc)
+		dev.Router.enable()
+		dev.Router.setTimestamp(packet.Metadata().Timestamp)
 		return
 	}
 
@@ -35,8 +35,8 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
-		dev.ucasts.Add(netSrc)
-		dev.mcasts.Del(layers.NewIPEndpoint(done.MulticastAddress))
+		dev.UCasts.Add(netSrc)
+		dev.MCasts.Del(layers.NewIPEndpoint(done.MulticastAddress))
 		return
 	}
 
@@ -48,8 +48,8 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
-		dev.ucasts.Add(netSrc)
-		dev.mcasts.Add(layers.NewIPEndpoint(report.MulticastAddress))
+		dev.UCasts.Add(netSrc)
+		dev.MCasts.Add(layers.NewIPEndpoint(report.MulticastAddress))
 		return
 	}
 
@@ -61,9 +61,9 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
-		dev.ucasts.Add(netSrc)
-		dev.router.enable()
-		dev.router.setTimestamp(packet.Metadata().Timestamp)
+		dev.UCasts.Add(netSrc)
+		dev.Router.enable()
+		dev.Router.setTimestamp(packet.Metadata().Timestamp)
 		return
 	}
 
@@ -74,18 +74,18 @@ func parseMld(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
-		dev.ucasts.Add(netSrc)
+		dev.UCasts.Add(netSrc)
 
 		// parse multicast addresses and add/remove them
 		for _, v := range report.MulticastAddressRecords {
 			switch v.RecordType {
 			case mldv2IsEx, mldv2ToEx:
 				// add IP
-				dev.mcasts.Add(layers.NewIPEndpoint(
+				dev.MCasts.Add(layers.NewIPEndpoint(
 					v.MulticastAddress))
 			case mldv2IsIn, mldv2ToIn:
 				// remove IP
-				dev.mcasts.Del(layers.NewIPEndpoint(
+				dev.MCasts.Del(layers.NewIPEndpoint(
 					v.MulticastAddress))
 			}
 		}

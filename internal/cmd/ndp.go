@@ -16,7 +16,7 @@ func parseNdp(packet gopacket.Packet) {
 
 		// add to table
 		dev := devices.Add(linkSrc)
-		dev.ucasts.Add(netSrc)
+		dev.UCasts.Add(netSrc)
 
 		return
 	}
@@ -31,7 +31,7 @@ func parseNdp(packet gopacket.Packet) {
 
 		// add to table
 		dev := devices.Add(linkSrc)
-		dev.ucasts.Add(targetIP)
+		dev.UCasts.Add(targetIP)
 
 		return
 	}
@@ -45,7 +45,7 @@ func parseNdp(packet gopacket.Packet) {
 
 		// add to table
 		dev := devices.Add(linkSrc)
-		dev.ucasts.Add(netSrc)
+		dev.UCasts.Add(netSrc)
 
 		return
 	}
@@ -59,19 +59,19 @@ func parseNdp(packet gopacket.Packet) {
 
 		// add to table
 		dev := devices.Add(linkSrc)
-		dev.ucasts.Add(netSrc)
+		dev.UCasts.Add(netSrc)
 
 		// mark device as a router
 		timestamp := packet.Metadata().Timestamp
-		dev.router.enable()
-		dev.router.setTimestamp(timestamp)
+		dev.Router.enable()
+		dev.Router.setTimestamp(timestamp)
 
 		// flush prefixes and refill with advertised ones
 		adv, _ := radvLayer.(*layers.ICMPv6RouterAdvertisement)
-		dev.prefixes.clear()
+		dev.Prefixes.clear()
 		for i := range adv.Options {
 			if adv.Options[i].Type == layers.ICMPv6OptPrefixInfo {
-				p := dev.prefixes.add(adv.Options[i])
+				p := dev.Prefixes.add(adv.Options[i])
 				p.setTimestamp(timestamp)
 			}
 		}

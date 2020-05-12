@@ -7,58 +7,58 @@ import (
 	"github.com/google/gopacket"
 )
 
-// deviceInfo is a device found on the network
-type deviceInfo struct {
+// DeviceInfo is a device found on the network
+type DeviceInfo struct {
 	timeInfo
-	mac       gopacket.Endpoint
-	vlans     vnetMap
-	vxlans    vnetMap
-	geneves   vnetMap
-	powerline propInfo
-	bridge    propInfo
-	dhcp      propInfo
-	router    propInfo
-	prefixes  prefixList
-	packets   int
-	ucasts    AddrMap
-	mcasts    AddrMap
-	macPeers  AddrMap
-	ipPeers   AddrMap
+	MAC       gopacket.Endpoint
+	VLANs     vnetMap
+	VXLANs    vnetMap
+	GENEVEs   vnetMap
+	Powerline propInfo
+	Bridge    propInfo
+	DHCP      propInfo
+	Router    propInfo
+	Prefixes  prefixList
+	Packets   int
+	UCasts    AddrMap
+	MCasts    AddrMap
+	MACPeers  AddrMap
+	IPPeers   AddrMap
 }
 
 // Print prints the device to w
-func (d *deviceInfo) Print(w io.Writer) {
+func (d *DeviceInfo) Print(w io.Writer) {
 	// print MAC address
 	macFmt := "MAC: %-43s (age: %.f, pkts: %d)\n"
-	fmt.Fprintf(w, macFmt, d.mac, d.getAge(), d.packets)
+	fmt.Fprintf(w, macFmt, d.MAC, d.getAge(), d.Packets)
 
 	// print properties
 	propsHeader := "  Properties:\n"
-	if d.bridge.isEnabled() ||
-		d.dhcp.isEnabled() ||
-		d.router.isEnabled() ||
-		d.powerline.isEnabled() ||
-		d.vlans.Len() > 0 ||
-		d.vxlans.Len() > 0 ||
-		d.geneves.Len() > 0 {
+	if d.Bridge.isEnabled() ||
+		d.DHCP.isEnabled() ||
+		d.Router.isEnabled() ||
+		d.Powerline.isEnabled() ||
+		d.VLANs.Len() > 0 ||
+		d.VXLANs.Len() > 0 ||
+		d.GENEVEs.Len() > 0 {
 
 		// start with header
 		fmt.Fprintf(w, propsHeader)
 
 		// print device properties
-		d.bridge.Print(w)
-		d.dhcp.Print(w)
-		d.router.Print(w)
-		d.prefixes.Print(w)
-		d.powerline.Print(w)
-		d.vlans.Print(w)
-		d.vxlans.Print(w)
-		d.geneves.Print(w)
+		d.Bridge.Print(w)
+		d.DHCP.Print(w)
+		d.Router.Print(w)
+		d.Prefixes.Print(w)
+		d.Powerline.Print(w)
+		d.VLANs.Print(w)
+		d.VXLANs.Print(w)
+		d.GENEVEs.Print(w)
 	}
 
 	// print addresses
-	d.ucasts.Print(w)
-	d.mcasts.Print(w)
-	d.macPeers.Print(w)
-	d.ipPeers.Print(w)
+	d.UCasts.Print(w)
+	d.MCasts.Print(w)
+	d.MACPeers.Print(w)
+	d.IPPeers.Print(w)
 }

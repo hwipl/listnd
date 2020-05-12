@@ -13,7 +13,7 @@ func parseGeneve(packet gopacket.Packet) {
 		geneve, _ := geneveLayer.(*layers.Geneve)
 		linkSrc, _ := getMacs(packet)
 		dev := devices.Get(linkSrc)
-		g := dev.geneves.Add(geneve.VNI)
+		g := dev.GENEVEs.Add(geneve.VNI)
 		g.Type = "GENEVE"
 		g.setTimestamp(packet.Metadata().Timestamp)
 		g.packets++

@@ -18,35 +18,35 @@ var (
 type DeviceMap struct {
 	sync.Mutex
 	Packets int
-	m       map[gopacket.Endpoint]*deviceInfo
+	m       map[gopacket.Endpoint]*DeviceInfo
 }
 
 // Add adds a device to the device table and returns the new device info entry
-func (d *DeviceMap) Add(linkAddr gopacket.Endpoint) *deviceInfo {
+func (d *DeviceMap) Add(linkAddr gopacket.Endpoint) *DeviceInfo {
 	// create map if necessary
 	if d.m == nil {
-		d.m = make(map[gopacket.Endpoint]*deviceInfo)
+		d.m = make(map[gopacket.Endpoint]*DeviceInfo)
 	}
 	// create table entries if necessary
 	if d.m[linkAddr] == nil {
 		debug("Adding new entry")
-		device := deviceInfo{}
-		device.mac = linkAddr
-		device.powerline.name = "Powerline"
-		device.bridge.name = "Bridge"
-		device.dhcp.name = "DHCP Server"
-		device.router.name = "Router"
-		device.ucasts.name = "Unicast Addresses"
-		device.mcasts.name = "Multicast Addresses"
-		device.macPeers.name = "MAC Peers"
-		device.ipPeers.name = "IP Peers"
+		device := DeviceInfo{}
+		device.MAC = linkAddr
+		device.Powerline.name = "Powerline"
+		device.Bridge.name = "Bridge"
+		device.DHCP.name = "DHCP Server"
+		device.Router.name = "Router"
+		device.UCasts.name = "Unicast Addresses"
+		device.MCasts.name = "Multicast Addresses"
+		device.MACPeers.name = "MAC Peers"
+		device.IPPeers.name = "IP Peers"
 		d.m[linkAddr] = &device
 	}
 	return d.m[linkAddr]
 }
 
 // Get returns device information for device with linkAddr
-func (d *DeviceMap) Get(linkAddr gopacket.Endpoint) *deviceInfo {
+func (d *DeviceMap) Get(linkAddr gopacket.Endpoint) *DeviceInfo {
 	if d == nil {
 		return nil
 	}
