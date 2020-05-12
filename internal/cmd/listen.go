@@ -6,6 +6,8 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
+
+	"github.com/hwipl/listnd/internal/pkt"
 )
 
 // listen listens on the network interface and parses packets
@@ -26,6 +28,6 @@ func listen() {
 	packetSource := gopacket.NewPacketSource(pcapHandle,
 		pcapHandle.LinkType())
 	for packet := range packetSource.Packets() {
-		parse(packet)
+		pkt.Parse(packet)
 	}
 }

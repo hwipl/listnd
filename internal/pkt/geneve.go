@@ -1,4 +1,4 @@
-package cmd
+package pkt
 
 import (
 	"github.com/google/gopacket"

@@ -1,8 +1,40 @@
-package cmd
+package pkt
 
 import (
+	"fmt"
+
 	"github.com/google/gopacket"
+
+	"github.com/hwipl/listnd/internal/dev"
 )
+
+var (
+	debugMode bool
+	withPeers bool
+	devices   *dev.DeviceMap
+)
+
+// SetDebug enables or disables debug output
+func SetDebug(enable bool) {
+	debugMode = enable
+}
+
+// SetPeers enables or disabled parsing of peer addresses
+func SetPeers(enable bool) {
+	withPeers = enable
+}
+
+// SetDevices sets the device table
+func SetDevices(devs *dev.DeviceMap) {
+	devices = devs
+}
+
+// debug prints text if in debug mode
+func debug(text string) {
+	if debugMode {
+		fmt.Println(text)
+	}
+}
 
 // getMacs is a helper for getting src and dst mac addresses of packet
 func getMacs(packet gopacket.Packet) (gopacket.Endpoint, gopacket.Endpoint) {
@@ -82,8 +114,8 @@ func parsePeers(packet gopacket.Packet) {
 	dev.IPPeers.Add(netDst)
 }
 
-// parse parses the packet
-func parse(packet gopacket.Packet) {
+// Parse parses the packet
+func Parse(packet gopacket.Packet) {
 	// lock devices
 	devices.Lock()
 
@@ -104,5 +136,4 @@ func parse(packet gopacket.Packet) {
 
 	// unlock devices
 	devices.Unlock()
-
 }

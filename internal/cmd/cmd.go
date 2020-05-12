@@ -7,6 +7,7 @@ import (
 	"github.com/google/gopacket/pcap"
 
 	"github.com/hwipl/listnd/internal/dev"
+	"github.com/hwipl/listnd/internal/pkt"
 )
 
 var (
@@ -61,6 +62,9 @@ func parseCommandLine() {
 func Run() {
 	parseCommandLine()
 	dev.SetDebug(debugMode)
+	pkt.SetDebug(debugMode)
+	pkt.SetDevices(&devices)
+	pkt.SetPeers(withPeers)
 	if httpListen != "" {
 		// start http server and print device table to clients
 		go startHTTP()
