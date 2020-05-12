@@ -9,7 +9,7 @@ import (
 
 // PrefixInfo stores a router's prefix information
 type PrefixInfo struct {
-	timeInfo
+	TimeInfo
 	Prefix layers.ICMPv6Option
 }
 
@@ -19,5 +19,5 @@ func (p *PrefixInfo) String() string {
 	pfLen := uint8(p.Prefix.Data[0])
 	pf := net.IP(p.Prefix.Data[14:])
 	ps := fmt.Sprintf("%v/%v", pf, pfLen)
-	return fmt.Sprintf(prefixFmt, ps, p.getAge())
+	return fmt.Sprintf(prefixFmt, ps, p.Age())
 }

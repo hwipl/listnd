@@ -2,20 +2,20 @@ package cmd
 
 import "time"
 
-//  timeInfo stores a timestamp
-type timeInfo struct {
-	timestamp time.Time
+//  TimeInfo stores a timestamp
+type TimeInfo struct {
+	Timestamp time.Time
 }
 
-// setTimestamp sets the timestamp
-func (t *timeInfo) setTimestamp(timestamp time.Time) {
-	t.timestamp = timestamp
+// SetTimestamp sets the timestamp
+func (t *TimeInfo) SetTimestamp(timestamp time.Time) {
+	t.Timestamp = timestamp
 }
 
-// getAge gets seconds since timestamp
-func (t *timeInfo) getAge() float64 {
-	if t.timestamp == (time.Time{}) {
+// Age gets seconds since timestamp
+func (t *TimeInfo) Age() float64 {
+	if t.Timestamp == (time.Time{}) {
 		return -1
 	}
-	return time.Since(t.timestamp).Seconds()
+	return time.Since(t.Timestamp).Seconds()
 }

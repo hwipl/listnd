@@ -23,7 +23,7 @@ func parseMld(packet gopacket.Packet) {
 		dev := devices.Get(linkSrc)
 		dev.UCasts.Add(netSrc)
 		dev.Router.Enable()
-		dev.Router.setTimestamp(packet.Metadata().Timestamp)
+		dev.Router.SetTimestamp(packet.Metadata().Timestamp)
 		return
 	}
 
@@ -63,7 +63,7 @@ func parseMld(packet gopacket.Packet) {
 		dev := devices.Get(linkSrc)
 		dev.UCasts.Add(netSrc)
 		dev.Router.Enable()
-		dev.Router.setTimestamp(packet.Metadata().Timestamp)
+		dev.Router.SetTimestamp(packet.Metadata().Timestamp)
 		return
 	}
 

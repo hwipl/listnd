@@ -41,24 +41,24 @@ func updateStatistics(packet gopacket.Packet) {
 
 		// mac/device
 		device.Packets++
-		device.setTimestamp(timestamp)
+		device.SetTimestamp(timestamp)
 
 		// unicast ips
 		if ip := device.UCasts.Get(netSrc); ip != nil {
 			ip.Packets++
-			ip.setTimestamp(timestamp)
+			ip.SetTimestamp(timestamp)
 		}
 
 		// mac peers
 		if peer := device.MACPeers.Get(linkDst); peer != nil {
 			peer.Packets++
-			peer.setTimestamp(timestamp)
+			peer.SetTimestamp(timestamp)
 		}
 
 		// ip peers
 		if peer := device.IPPeers.Get(netDst); peer != nil {
 			peer.Packets++
-			peer.setTimestamp(timestamp)
+			peer.SetTimestamp(timestamp)
 		}
 	}
 }

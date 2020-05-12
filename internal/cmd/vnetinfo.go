@@ -4,7 +4,7 @@ import "fmt"
 
 // vnetInfo stores virtual network information
 type vnetInfo struct {
-	timeInfo
+	TimeInfo
 	Type    string
 	ID      uint32
 	packets int
@@ -14,6 +14,6 @@ type vnetInfo struct {
 func (v *vnetInfo) String() string {
 	vnetFmt := "$s: %-*d (age: %.f, pkts: %d)"
 	padLen := 44 - len(v.Type)
-	return fmt.Sprintf(vnetFmt, padLen, v.Type, v.ID, v.getAge(),
+	return fmt.Sprintf(vnetFmt, padLen, v.Type, v.ID, v.Age(),
 		v.packets)
 }

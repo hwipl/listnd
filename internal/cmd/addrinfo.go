@@ -9,7 +9,7 @@ import (
 
 // AddrInfo stores an ip or mac address of a device on the network
 type AddrInfo struct {
-	timeInfo
+	TimeInfo
 	Addr    gopacket.Endpoint
 	Packets int
 }
@@ -23,5 +23,5 @@ func (a *AddrInfo) String() string {
 		aFmt = "IP: %-40s (age: %.f, pkts: %d)"
 	}
 
-	return fmt.Sprintf(aFmt, a.Addr, a.getAge(), a.Packets)
+	return fmt.Sprintf(aFmt, a.Addr, a.Age(), a.Packets)
 }

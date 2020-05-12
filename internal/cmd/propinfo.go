@@ -7,7 +7,7 @@ import (
 
 // PropInfo is a device property
 type PropInfo struct {
-	timeInfo
+	TimeInfo
 	Name    string
 	Enabled bool
 }
@@ -37,5 +37,5 @@ func (p *PropInfo) Print(w io.Writer) {
 	}
 	propFmt := "    %s: %-*t (age: %.f)\n"
 	padLen := 42 - len(p.Name)
-	fmt.Fprintf(w, propFmt, p.Name, padLen, p.Enabled, p.getAge())
+	fmt.Fprintf(w, propFmt, p.Name, padLen, p.Enabled, p.Age())
 }

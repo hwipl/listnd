@@ -64,7 +64,7 @@ func parseNdp(packet gopacket.Packet) {
 		// mark device as a router
 		timestamp := packet.Metadata().Timestamp
 		dev.Router.Enable()
-		dev.Router.setTimestamp(timestamp)
+		dev.Router.SetTimestamp(timestamp)
 
 		// flush prefixes and refill with advertised ones
 		adv, _ := radvLayer.(*layers.ICMPv6RouterAdvertisement)
@@ -72,7 +72,7 @@ func parseNdp(packet gopacket.Packet) {
 		for i := range adv.Options {
 			if adv.Options[i].Type == layers.ICMPv6OptPrefixInfo {
 				p := dev.Prefixes.Add(adv.Options[i])
-				p.setTimestamp(timestamp)
+				p.SetTimestamp(timestamp)
 			}
 		}
 		return

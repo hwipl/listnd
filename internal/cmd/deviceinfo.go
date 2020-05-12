@@ -9,7 +9,7 @@ import (
 
 // DeviceInfo is a device found on the network
 type DeviceInfo struct {
-	timeInfo
+	TimeInfo
 	MAC       gopacket.Endpoint
 	VLANs     vnetMap
 	VXLANs    vnetMap
@@ -30,7 +30,7 @@ type DeviceInfo struct {
 func (d *DeviceInfo) Print(w io.Writer) {
 	// print MAC address
 	macFmt := "MAC: %-43s (age: %.f, pkts: %d)\n"
-	fmt.Fprintf(w, macFmt, d.MAC, d.getAge(), d.Packets)
+	fmt.Fprintf(w, macFmt, d.MAC, d.Age(), d.Packets)
 
 	// print properties
 	propsHeader := "  Properties:\n"
