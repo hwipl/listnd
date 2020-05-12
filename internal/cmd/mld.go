@@ -22,7 +22,7 @@ func parseMld(packet gopacket.Packet) {
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
 		dev.UCasts.Add(netSrc)
-		dev.Router.enable()
+		dev.Router.Enable()
 		dev.Router.setTimestamp(packet.Metadata().Timestamp)
 		return
 	}
@@ -62,7 +62,7 @@ func parseMld(packet gopacket.Packet) {
 		netSrc, _ := getIps(packet)
 		dev := devices.Get(linkSrc)
 		dev.UCasts.Add(netSrc)
-		dev.Router.enable()
+		dev.Router.Enable()
 		dev.Router.setTimestamp(packet.Metadata().Timestamp)
 		return
 	}

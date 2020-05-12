@@ -16,7 +16,7 @@ func parsePlc(packet gopacket.Packet) {
 
 			// add device and mark this device as a powerline
 			dev := devices.Add(linkSrc)
-			dev.Powerline.enable()
+			dev.Powerline.Enable()
 			dev.Powerline.setTimestamp(packet.Metadata().Timestamp)
 		}
 	}

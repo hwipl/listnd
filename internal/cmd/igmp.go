@@ -26,7 +26,7 @@ func parseIgmp(packet gopacket.Packet) {
 		case layers.IGMPMembershipQuery:
 			debug("IGMPv1or2 Membership Query")
 			// queries are sent by routers, mark as router
-			dev.Router.enable()
+			dev.Router.Enable()
 			dev.Router.setTimestamp(packet.Metadata().Timestamp)
 		case layers.IGMPMembershipReportV1:
 			debug("IGMPv1 Membership Report")
@@ -50,7 +50,7 @@ func parseIgmp(packet gopacket.Packet) {
 		if igmp.Type == layers.IGMPMembershipQuery {
 			debug("IGMPv3 Membership Query")
 			// queries are sent by routers, mark as router
-			dev.Router.enable()
+			dev.Router.Enable()
 			dev.Router.setTimestamp(
 				packet.Metadata().Timestamp)
 		}

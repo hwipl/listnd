@@ -32,10 +32,10 @@ func (d *DeviceMap) Add(linkAddr gopacket.Endpoint) *DeviceInfo {
 		debug("Adding new entry")
 		device := DeviceInfo{}
 		device.MAC = linkAddr
-		device.Powerline.name = "Powerline"
-		device.Bridge.name = "Bridge"
-		device.DHCP.name = "DHCP Server"
-		device.Router.name = "Router"
+		device.Powerline.Name = "Powerline"
+		device.Bridge.Name = "Bridge"
+		device.DHCP.Name = "DHCP Server"
+		device.Router.Name = "Router"
 		device.UCasts.Name = "Unicast Addresses"
 		device.MCasts.Name = "Multicast Addresses"
 		device.MACPeers.Name = "MAC Peers"

@@ -63,7 +63,7 @@ func parseNdp(packet gopacket.Packet) {
 
 		// mark device as a router
 		timestamp := packet.Metadata().Timestamp
-		dev.Router.enable()
+		dev.Router.Enable()
 		dev.Router.setTimestamp(timestamp)
 
 		// flush prefixes and refill with advertised ones

@@ -14,10 +14,10 @@ type DeviceInfo struct {
 	VLANs     vnetMap
 	VXLANs    vnetMap
 	GENEVEs   vnetMap
-	Powerline propInfo
-	Bridge    propInfo
-	DHCP      propInfo
-	Router    propInfo
+	Powerline PropInfo
+	Bridge    PropInfo
+	DHCP      PropInfo
+	Router    PropInfo
 	Prefixes  PrefixList
 	Packets   int
 	UCasts    AddrMap
@@ -34,10 +34,10 @@ func (d *DeviceInfo) Print(w io.Writer) {
 
 	// print properties
 	propsHeader := "  Properties:\n"
-	if d.Bridge.isEnabled() ||
-		d.DHCP.isEnabled() ||
-		d.Router.isEnabled() ||
-		d.Powerline.isEnabled() ||
+	if d.Bridge.IsEnabled() ||
+		d.DHCP.IsEnabled() ||
+		d.Router.IsEnabled() ||
+		d.Powerline.IsEnabled() ||
 		d.VLANs.Len() > 0 ||
 		d.VXLANs.Len() > 0 ||
 		d.GENEVEs.Len() > 0 {

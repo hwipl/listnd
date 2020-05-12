@@ -5,37 +5,37 @@ import (
 	"io"
 )
 
-// propInfo is a device property
-type propInfo struct {
+// PropInfo is a device property
+type PropInfo struct {
 	timeInfo
-	name    string
-	enabled bool
+	Name    string
+	Enabled bool
 }
 
-// enable enables the device property
-func (p *propInfo) enable() {
-	p.enabled = true
+// Enable enables the device property
+func (p *PropInfo) Enable() {
+	p.Enabled = true
 }
 
-// disable disables the device property
-func (p *propInfo) disable() {
-	p.enabled = false
+// Disable disables the device property
+func (p *PropInfo) Disable() {
+	p.Enabled = false
 }
 
-// isEnabled checks if device property is enabled
-func (p *propInfo) isEnabled() bool {
-	if p != nil && p.enabled {
+// IsEnabled checks if device property is enabled
+func (p *PropInfo) IsEnabled() bool {
+	if p != nil && p.Enabled {
 		return true
 	}
 	return false
 }
 
 // Print prints the property info to w
-func (p *propInfo) Print(w io.Writer) {
-	if !p.enabled {
+func (p *PropInfo) Print(w io.Writer) {
+	if !p.Enabled {
 		return
 	}
 	propFmt := "    %s: %-*t (age: %.f)\n"
-	padLen := 42 - len(p.name)
-	fmt.Fprintf(w, propFmt, p.name, padLen, p.enabled, p.getAge())
+	padLen := 42 - len(p.Name)
+	fmt.Fprintf(w, propFmt, p.Name, padLen, p.Enabled, p.getAge())
 }

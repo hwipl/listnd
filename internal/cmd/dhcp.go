@@ -23,7 +23,7 @@ func parseDhcp(packet gopacket.Packet) {
 			debug("DHCP Reply")
 			// mark this device as dhcp server
 			dev := devices.Get(linkSrc)
-			dev.DHCP.enable()
+			dev.DHCP.Enable()
 			dev.DHCP.setTimestamp(packet.Metadata().Timestamp)
 		}
 	}
@@ -47,7 +47,7 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeRequest:
 			debug("DHCPv6 Request")
 			// server
-			dev.DHCP.enable()
+			dev.DHCP.Enable()
 			dev.DHCP.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeConfirm:
 			debug("DHCPv6 Confirm")
@@ -58,7 +58,7 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeReply:
 			debug("DHCPv6 Reply")
 			// server
-			dev.DHCP.enable()
+			dev.DHCP.Enable()
 			dev.DHCP.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeRelease:
 			debug("DHCPv6 Release")
@@ -67,7 +67,7 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeReconfigure:
 			debug("DHCPv6 Reconfigure")
 			// server
-			dev.DHCP.enable()
+			dev.DHCP.Enable()
 			dev.DHCP.setTimestamp(timestamp)
 		case layers.DHCPv6MsgTypeInformationRequest:
 			debug("DHCPv6 Information Request")
@@ -76,7 +76,7 @@ func parseDhcp(packet gopacket.Packet) {
 		case layers.DHCPv6MsgTypeRelayReply:
 			debug("DHCPv6 Relay Reply")
 			// server
-			dev.DHCP.enable()
+			dev.DHCP.Enable()
 			dev.DHCP.setTimestamp(timestamp)
 		}
 	}
