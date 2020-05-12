@@ -23,7 +23,7 @@ func parseArp(packet gopacket.Packet) {
 		netSrc := layers.NewIPEndpoint(arp.SourceProtAddress)
 
 		// add to table
-		dev := devices.add(linkSrc)
+		dev := devices.Add(linkSrc)
 		dev.ucasts.Add(netSrc)
 	}
 }

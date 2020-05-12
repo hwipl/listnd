@@ -11,18 +11,18 @@ import (
 // variable definitions
 var (
 	// network device map
-	devices deviceMap
+	devices DeviceMap
 )
 
-// deviceMap is the device table definition
-type deviceMap struct {
+// DeviceMap is the device table definition
+type DeviceMap struct {
 	sync.Mutex
-	packets int
+	Packets int
 	m       map[gopacket.Endpoint]*deviceInfo
 }
 
-// add adds a device to the device table and returns the new device info entry
-func (d *deviceMap) add(linkAddr gopacket.Endpoint) *deviceInfo {
+// Add adds a device to the device table and returns the new device info entry
+func (d *DeviceMap) Add(linkAddr gopacket.Endpoint) *deviceInfo {
 	// create map if necessary
 	if d.m == nil {
 		d.m = make(map[gopacket.Endpoint]*deviceInfo)
@@ -46,7 +46,7 @@ func (d *deviceMap) add(linkAddr gopacket.Endpoint) *deviceInfo {
 }
 
 // Get returns device information for device with linkAddr
-func (d *deviceMap) Get(linkAddr gopacket.Endpoint) *deviceInfo {
+func (d *DeviceMap) Get(linkAddr gopacket.Endpoint) *deviceInfo {
 	if d == nil {
 		return nil
 	}
@@ -57,13 +57,13 @@ func (d *deviceMap) Get(linkAddr gopacket.Endpoint) *deviceInfo {
 }
 
 // Print prints all devices to w
-func (d *deviceMap) Print(w io.Writer) {
+func (d *DeviceMap) Print(w io.Writer) {
 	devicesFmt := "===================================" +
 		"===================================\n" +
 		"Devices: %-39d (pkts: %d)\n" +
 		"===================================" +
 		"===================================\n"
-	fmt.Fprintf(w, devicesFmt, len(d.m), d.packets)
+	fmt.Fprintf(w, devicesFmt, len(d.m), d.Packets)
 	for _, device := range d.m {
 		device.Print(w)
 		fmt.Fprintln(w)

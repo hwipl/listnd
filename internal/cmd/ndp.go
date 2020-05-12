@@ -15,7 +15,7 @@ func parseNdp(packet gopacket.Packet) {
 		netSrc, _ := getIps(packet)
 
 		// add to table
-		dev := devices.add(linkSrc)
+		dev := devices.Add(linkSrc)
 		dev.ucasts.Add(netSrc)
 
 		return
@@ -30,7 +30,7 @@ func parseNdp(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 
 		// add to table
-		dev := devices.add(linkSrc)
+		dev := devices.Add(linkSrc)
 		dev.ucasts.Add(targetIP)
 
 		return
@@ -44,7 +44,7 @@ func parseNdp(packet gopacket.Packet) {
 		netSrc, _ := getIps(packet)
 
 		// add to table
-		dev := devices.add(linkSrc)
+		dev := devices.Add(linkSrc)
 		dev.ucasts.Add(netSrc)
 
 		return
@@ -58,7 +58,7 @@ func parseNdp(packet gopacket.Packet) {
 		netSrc, _ := getIps(packet)
 
 		// add to table
-		dev := devices.add(linkSrc)
+		dev := devices.Add(linkSrc)
 		dev.ucasts.Add(netSrc)
 
 		// mark device as a router

@@ -13,7 +13,7 @@ func parseStp(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 
 		// add device and mark this device as a bridge
-		dev := devices.add(linkSrc)
+		dev := devices.Add(linkSrc)
 		dev.bridge.enable()
 		dev.bridge.setTimestamp(packet.Metadata().Timestamp)
 	}

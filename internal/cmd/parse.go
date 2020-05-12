@@ -35,7 +35,7 @@ func updateStatistics(packet gopacket.Packet) {
 	netSrc, netDst := getIps(packet)
 
 	// increase packet counters
-	devices.packets++
+	devices.Packets++
 	if device := devices.Get(linkSrc); device != nil {
 		timestamp := packet.Metadata().Timestamp
 
@@ -66,7 +66,7 @@ func updateStatistics(packet gopacket.Packet) {
 // parseSrcMac parses the source MAC address and adds it to device table
 func parseSrcMac(packet gopacket.Packet) {
 	linkSrc, _ := getMacs(packet)
-	devices.add(linkSrc)
+	devices.Add(linkSrc)
 }
 
 // parsePeers parses peer addresses and adds them to device table

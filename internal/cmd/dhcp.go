@@ -14,7 +14,7 @@ func parseDhcp(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 
 		// add device
-		devices.add(linkSrc)
+		devices.Add(linkSrc)
 		if dhcp.Operation == layers.DHCPOpRequest {
 			debug("DHCP Request")
 			return
