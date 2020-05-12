@@ -7,17 +7,17 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
-// prefixInfo stores a router's prefix information
-type prefixInfo struct {
+// PrefixInfo stores a router's prefix information
+type PrefixInfo struct {
 	timeInfo
-	prefix layers.ICMPv6Option
+	Prefix layers.ICMPv6Option
 }
 
 // String converts the prefix to a string
-func (p *prefixInfo) String() string {
+func (p *PrefixInfo) String() string {
 	prefixFmt := "Prefix: %-34s (age: %.f)"
-	pfLen := uint8(p.prefix.Data[0])
-	pf := net.IP(p.prefix.Data[14:])
+	pfLen := uint8(p.Prefix.Data[0])
+	pf := net.IP(p.Prefix.Data[14:])
 	ps := fmt.Sprintf("%v/%v", pf, pfLen)
 	return fmt.Sprintf(prefixFmt, ps, p.getAge())
 }

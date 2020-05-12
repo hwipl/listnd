@@ -9,7 +9,7 @@ import (
 
 // prefixList stores router prefixes
 type prefixList struct {
-	prefixes []*prefixInfo
+	prefixes []*PrefixInfo
 }
 
 // clear deletes all prefixes
@@ -18,15 +18,15 @@ func (p *prefixList) clear() {
 }
 
 // add adds a prefix
-func (p *prefixList) add(prefix layers.ICMPv6Option) *prefixInfo {
-	pf := prefixInfo{}
-	pf.prefix = prefix
+func (p *prefixList) add(prefix layers.ICMPv6Option) *PrefixInfo {
+	pf := PrefixInfo{}
+	pf.Prefix = prefix
 	p.prefixes = append(p.prefixes, &pf)
 	return &pf
 }
 
 // get returns all prefixes
-func (p *prefixList) get() []*prefixInfo {
+func (p *prefixList) get() []*PrefixInfo {
 	return p.prefixes
 }
 
