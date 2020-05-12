@@ -40,7 +40,7 @@ func isValidAddr(address gopacket.Endpoint) bool {
 
 // AddrMap stores mappings of ip/mac addresses to address info
 type AddrMap struct {
-	name string
+	Name string
 	m    map[gopacket.Endpoint]*AddrInfo
 }
 
@@ -92,7 +92,7 @@ func (a *AddrMap) Del(address gopacket.Endpoint) {
 func (a *AddrMap) Print(w io.Writer) {
 	// print addresses
 	if len(a.m) > 0 {
-		fmt.Fprintf(w, "  %s:\n", a.name)
+		fmt.Fprintf(w, "  %s:\n", a.Name)
 		for _, addr := range a.m {
 			fmt.Fprintf(w, "    %s\n", addr)
 		}

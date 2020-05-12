@@ -36,10 +36,10 @@ func (d *DeviceMap) Add(linkAddr gopacket.Endpoint) *DeviceInfo {
 		device.Bridge.name = "Bridge"
 		device.DHCP.name = "DHCP Server"
 		device.Router.name = "Router"
-		device.UCasts.name = "Unicast Addresses"
-		device.MCasts.name = "Multicast Addresses"
-		device.MACPeers.name = "MAC Peers"
-		device.IPPeers.name = "IP Peers"
+		device.UCasts.Name = "Unicast Addresses"
+		device.MCasts.Name = "Multicast Addresses"
+		device.MACPeers.Name = "MAC Peers"
+		device.IPPeers.Name = "IP Peers"
 		d.m[linkAddr] = &device
 	}
 	return d.m[linkAddr]
