@@ -11,9 +11,9 @@ import (
 type DeviceInfo struct {
 	TimeInfo
 	MAC       gopacket.Endpoint
-	VLANs     vnetMap
-	VXLANs    vnetMap
-	GENEVEs   vnetMap
+	VLANs     VNetMap
+	VXLANs    VNetMap
+	GENEVEs   VNetMap
 	Powerline PropInfo
 	Bridge    PropInfo
 	DHCP      PropInfo

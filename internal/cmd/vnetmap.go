@@ -5,13 +5,13 @@ import (
 	"io"
 )
 
-// vnetMap stores mappings from vnet IDs to vnet information
-type vnetMap struct {
+// VNetMap stores mappings from vnet IDs to vnet information
+type VNetMap struct {
 	m map[uint32]*VNetInfo
 }
 
 // Add adds a vnet with id to the mapping and returns the vnet info
-func (v *vnetMap) Add(id uint32) *VNetInfo {
+func (v *VNetMap) Add(id uint32) *VNetInfo {
 	if v.m[id] == nil {
 		debug("Adding new vnet entry")
 		vnet := VNetInfo{
@@ -23,7 +23,7 @@ func (v *vnetMap) Add(id uint32) *VNetInfo {
 }
 
 // Get returns the vnet info with id
-func (v *vnetMap) Get(id uint32) *VNetInfo {
+func (v *VNetMap) Get(id uint32) *VNetInfo {
 	if v.m == nil {
 		return nil
 	}
@@ -31,12 +31,12 @@ func (v *vnetMap) Get(id uint32) *VNetInfo {
 }
 
 // Len returns the number of vnets in the vnet map
-func (v *vnetMap) Len() int {
+func (v *VNetMap) Len() int {
 	return len(v.m)
 }
 
 // Print prints the vnet map to w
-func (v *vnetMap) Print(w io.Writer) {
+func (v *VNetMap) Print(w io.Writer) {
 	for _, vnet := range v.m {
 		fmt.Fprintf(w, "    %s\n", vnet)
 	}
