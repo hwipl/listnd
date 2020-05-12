@@ -2,18 +2,18 @@ package cmd
 
 import "fmt"
 
-// vnetInfo stores virtual network information
-type vnetInfo struct {
+// VNetInfo stores virtual network information
+type VNetInfo struct {
 	TimeInfo
 	Type    string
 	ID      uint32
-	packets int
+	Packets int
 }
 
 // String converts vnet info to a string
-func (v *vnetInfo) String() string {
+func (v *VNetInfo) String() string {
 	vnetFmt := "$s: %-*d (age: %.f, pkts: %d)"
 	padLen := 44 - len(v.Type)
 	return fmt.Sprintf(vnetFmt, padLen, v.Type, v.ID, v.Age(),
-		v.packets)
+		v.Packets)
 }

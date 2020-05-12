@@ -17,7 +17,7 @@ func parseVxlan(packet gopacket.Packet) {
 			v := dev.VXLANs.Add(vxlan.VNI)
 			v.Type = "VXLAN"
 			v.SetTimestamp(packet.Metadata().Timestamp)
-			v.packets++
+			v.Packets++
 		}
 	}
 }

@@ -7,14 +7,14 @@ import (
 
 // vnetMap stores mappings from vnet IDs to vnet information
 type vnetMap struct {
-	m map[uint32]*vnetInfo
+	m map[uint32]*VNetInfo
 }
 
 // Add adds a vnet with id to the mapping and returns the vnet info
-func (v *vnetMap) Add(id uint32) *vnetInfo {
+func (v *vnetMap) Add(id uint32) *VNetInfo {
 	if v.m[id] == nil {
 		debug("Adding new vnet entry")
-		vnet := vnetInfo{
+		vnet := VNetInfo{
 			ID: id,
 		}
 		v.m[id] = &vnet
@@ -23,7 +23,7 @@ func (v *vnetMap) Add(id uint32) *vnetInfo {
 }
 
 // Get returns the vnet info with id
-func (v *vnetMap) Get(id uint32) *vnetInfo {
+func (v *vnetMap) Get(id uint32) *VNetInfo {
 	if v.m == nil {
 		return nil
 	}

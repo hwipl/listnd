@@ -16,6 +16,6 @@ func parseGeneve(packet gopacket.Packet) {
 		g := dev.GENEVEs.Add(geneve.VNI)
 		g.Type = "GENEVE"
 		g.SetTimestamp(packet.Metadata().Timestamp)
-		g.packets++
+		g.Packets++
 	}
 }
