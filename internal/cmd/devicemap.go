@@ -63,8 +63,8 @@ func (d *deviceMap) Print(w io.Writer) {
 		"Devices: %-39d (pkts: %d)\n" +
 		"===================================" +
 		"===================================\n"
-	fmt.Fprintf(w, devicesFmt, len(devices.m), devices.packets)
-	for _, device := range devices.m {
+	fmt.Fprintf(w, devicesFmt, len(d.m), d.packets)
+	for _, device := range d.m {
 		device.Print(w)
 		fmt.Fprintln(w)
 	}
