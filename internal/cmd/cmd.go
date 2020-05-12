@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/google/gopacket/pcap"
+
+	"github.com/hwipl/listnd/internal/dev"
 )
 
 var (
@@ -22,6 +24,9 @@ var (
 
 	// http
 	httpListen string = ""
+
+	// device table
+	devices dev.DeviceMap
 )
 
 // parseCommandLine parses the command line arguments
@@ -55,6 +60,7 @@ func parseCommandLine() {
 // Run is the main entry point of listnd
 func Run() {
 	parseCommandLine()
+	dev.SetDebug(debugMode)
 	if httpListen != "" {
 		// start http server and print device table to clients
 		go startHTTP()

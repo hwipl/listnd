@@ -1,4 +1,4 @@
-package cmd
+package dev
 
 import (
 	"fmt"
@@ -6,12 +6,6 @@ import (
 	"sync"
 
 	"github.com/google/gopacket"
-)
-
-// variable definitions
-var (
-	// network device map
-	devices DeviceMap
 )
 
 // DeviceMap is the device table definition

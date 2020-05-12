@@ -1,8 +1,8 @@
-package cmd
+package dev
 
 import "time"
 
-//  TimeInfo stores a timestamp
+// TimeInfo stores a timestamp
 type TimeInfo struct {
 	Timestamp time.Time
 }
