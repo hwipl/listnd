@@ -68,10 +68,10 @@ func parseNdp(packet gopacket.Packet) {
 
 		// flush prefixes and refill with advertised ones
 		adv, _ := radvLayer.(*layers.ICMPv6RouterAdvertisement)
-		dev.Prefixes.clear()
+		dev.Prefixes.Clear()
 		for i := range adv.Options {
 			if adv.Options[i].Type == layers.ICMPv6OptPrefixInfo {
-				p := dev.Prefixes.add(adv.Options[i])
+				p := dev.Prefixes.Add(adv.Options[i])
 				p.setTimestamp(timestamp)
 			}
 		}

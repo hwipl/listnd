@@ -18,7 +18,7 @@ type DeviceInfo struct {
 	Bridge    propInfo
 	DHCP      propInfo
 	Router    propInfo
-	Prefixes  prefixList
+	Prefixes  PrefixList
 	Packets   int
 	UCasts    AddrMap
 	MCasts    AddrMap

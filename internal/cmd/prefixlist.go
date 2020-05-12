@@ -7,32 +7,32 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
-// prefixList stores router prefixes
-type prefixList struct {
-	prefixes []*PrefixInfo
+// PrefixList stores router prefixes
+type PrefixList struct {
+	Prefixes []*PrefixInfo
 }
 
-// clear deletes all prefixes
-func (p *prefixList) clear() {
-	p.prefixes = nil
+// Clear deletes all prefixes
+func (p *PrefixList) Clear() {
+	p.Prefixes = nil
 }
 
-// add adds a prefix
-func (p *prefixList) add(prefix layers.ICMPv6Option) *PrefixInfo {
+// Add adds a prefix
+func (p *PrefixList) Add(prefix layers.ICMPv6Option) *PrefixInfo {
 	pf := PrefixInfo{}
 	pf.Prefix = prefix
-	p.prefixes = append(p.prefixes, &pf)
+	p.Prefixes = append(p.Prefixes, &pf)
 	return &pf
 }
 
-// get returns all prefixes
-func (p *prefixList) get() []*PrefixInfo {
-	return p.prefixes
+// Get returns all prefixes
+func (p *PrefixList) Get() []*PrefixInfo {
+	return p.Prefixes
 }
 
 // Print prints all prefixes
-func (p *prefixList) Print(w io.Writer) {
-	for _, prefix := range p.prefixes {
+func (p *PrefixList) Print(w io.Writer) {
+	for _, prefix := range p.Prefixes {
 		fmt.Fprintf(w, "      %s\n", prefix)
 	}
 }
