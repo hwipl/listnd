@@ -1,15 +1,20 @@
 package dev
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+	"os"
+)
 
 var (
 	debugMode bool
+	debugOut  io.Writer = os.Stdout
 )
 
 // debug prints debug output if in debug mode
 func debug(text string) {
 	if debugMode {
-		fmt.Println(text)
+		fmt.Fprintln(debugOut, text)
 	}
 }
 
