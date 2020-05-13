@@ -1,6 +1,7 @@
 package dev
 
 import (
+	"bytes"
 	"log"
 	"net"
 	"testing"
@@ -110,5 +111,32 @@ func TestAddrMapGet(t *testing.T) {
 	got = a.Get(ipv4)
 	if got == notWant {
 		t.Errorf("got = %p, notWant %p", got, notWant)
+	}
+}
+
+func TestAddrMapPrint(t *testing.T) {
+	var a AddrMap
+	var buf bytes.Buffer
+	var want, got string
+
+	// check empty map
+	a.Name = "TestMap"
+	a.Print(&buf)
+	want = ""
+	got = buf.String()
+	if got != want {
+		t.Errorf("got = %s; want %s", got, want)
+	}
+
+	// check filled map
+	ipv4 := layers.NewIPEndpoint(net.ParseIP("127.0.0.1"))
+	a.Add(ipv4)
+	a.Print(&buf)
+	want = "  TestMap:\n" +
+		"    IP: 127.0.0.1                                " +
+		"(age: -1, pkts: 0)\n"
+	got = buf.String()
+	if got != want {
+		t.Errorf("got = %s; want %s", got, want)
 	}
 }
