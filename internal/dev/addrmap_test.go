@@ -91,3 +91,24 @@ func TestAddrMapDel(t *testing.T) {
 		t.Errorf("got = %p; want %p", got, want)
 	}
 }
+
+func TestAddrMapGet(t *testing.T) {
+	var a AddrMap
+	var want, notWant, got *AddrInfo
+
+	// check empty map
+	ipv4 := layers.NewIPEndpoint(net.ParseIP("127.0.0.1"))
+	want = nil
+	got = a.Get(ipv4)
+	if got != want {
+		t.Errorf("got = %p; want %p", got, want)
+	}
+
+	// check filled map
+	a.Add(ipv4)
+	notWant = nil
+	got = a.Get(ipv4)
+	if got == notWant {
+		t.Errorf("got = %p, notWant %p", got, notWant)
+	}
+}
