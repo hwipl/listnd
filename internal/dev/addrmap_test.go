@@ -67,3 +67,27 @@ func TestAddrMapAdd(t *testing.T) {
 		t.Errorf("got = %p, notWant %p", got, notWant)
 	}
 }
+
+func TestAddrMapDel(t *testing.T) {
+	var a AddrMap
+	var want, got *AddrInfo
+
+	// check invalid addresses
+	a.Del(addrZero)
+	a.Del(addrUnspecMAC)
+	a.Del(addrUnspecIPv4)
+	a.Del(addrUnspecIPv6)
+
+	// check valid address, empty map
+	ipv4 := layers.NewIPEndpoint(net.ParseIP("127.0.0.1"))
+	a.Del(ipv4)
+
+	// check valid address, filled map
+	a.Add(ipv4)
+	a.Del(ipv4)
+	want = nil
+	got = a.Get(ipv4)
+	if got != want {
+		t.Errorf("got = %p; want %p", got, want)
+	}
+}
