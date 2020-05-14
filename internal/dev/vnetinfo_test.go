@@ -7,7 +7,7 @@ func TestVNetInfo(t *testing.T) {
 	var want, got string
 
 	// test default
-	want = ": 0                                            " +
+	want = ": 0                                          " +
 		"(age: -1, pkts: 0)"
 	got = v.String()
 	if got != want {
@@ -18,7 +18,7 @@ func TestVNetInfo(t *testing.T) {
 	v.Type = "TestVNet"
 	v.ID = 32
 	v.Packets = 128
-	want = "TestVNet: 32                                   " +
+	want = "TestVNet: 32                                 " +
 		"(age: -1, pkts: 128)"
 	got = v.String()
 	if got != want {

@@ -75,7 +75,7 @@ func TestVNetMapPrint(t *testing.T) {
 	vnet.ID = 32
 	vnet.Packets = 128
 	v.Print(&buf)
-	want = "    TestVNet: 32                                   " +
+	want = "    TestVNet: 32                                 " +
 		"(age: -1, pkts: 128)\n"
 	got = buf.String()
 	if got != want {
