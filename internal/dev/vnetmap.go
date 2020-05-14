@@ -12,6 +12,9 @@ type VNetMap struct {
 
 // Add adds a vnet with id to the mapping and returns the vnet info
 func (v *VNetMap) Add(id uint32) *VNetInfo {
+	if v.m == nil {
+		v.m = make(map[uint32]*VNetInfo)
+	}
 	if v.m[id] == nil {
 		debug("Adding new vnet entry")
 		vnet := VNetInfo{
