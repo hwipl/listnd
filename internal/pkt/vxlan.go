@@ -13,7 +13,7 @@ func parseVxlan(packet gopacket.Packet) {
 		vxlan, _ := vxlanLayer.(*layers.VXLAN)
 		if vxlan.ValidIDFlag {
 			linkSrc, _ := getMacs(packet)
-			dev := devices.Get(linkSrc)
+			dev := devices.Add(linkSrc)
 			v := dev.VXLANs.Add(vxlan.VNI)
 			v.Type = "VXLAN"
 			v.SetTimestamp(packet.Metadata().Timestamp)

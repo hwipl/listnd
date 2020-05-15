@@ -14,7 +14,7 @@ func parseDhcp(packet gopacket.Packet) {
 		linkSrc, _ := getMacs(packet)
 
 		// add device
-		devices.Add(linkSrc)
+		dev := devices.Add(linkSrc)
 		if dhcp.Operation == layers.DHCPOpRequest {
 			debug("DHCP Request")
 			return
@@ -22,7 +22,6 @@ func parseDhcp(packet gopacket.Packet) {
 		if dhcp.Operation == layers.DHCPOpReply {
 			debug("DHCP Reply")
 			// mark this device as dhcp server
-			dev := devices.Get(linkSrc)
 			dev.DHCP.Enable()
 			dev.DHCP.SetTimestamp(packet.Metadata().Timestamp)
 		}
@@ -34,7 +33,7 @@ func parseDhcp(packet gopacket.Packet) {
 		dhcp, _ := dhcpv6Layer.(*layers.DHCPv6)
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
-		dev := devices.Get(linkSrc)
+		dev := devices.Add(linkSrc)
 		dev.UCasts.Add(netSrc)
 		timestamp := packet.Metadata().Timestamp
 

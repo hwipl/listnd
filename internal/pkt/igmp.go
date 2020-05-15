@@ -16,7 +16,7 @@ func parseIgmp(packet gopacket.Packet) {
 
 	// add source IP to device
 	netSrc, _ := getIps(packet)
-	dev := devices.Get(linkSrc)
+	dev := devices.Add(linkSrc)
 	dev.UCasts.Add(netSrc)
 
 	// igmp v1 or v2

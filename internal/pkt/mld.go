@@ -20,7 +20,7 @@ func parseMld(packet gopacket.Packet) {
 		// queries are sent by routers, mark as router
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
-		dev := devices.Get(linkSrc)
+		dev := devices.Add(linkSrc)
 		dev.UCasts.Add(netSrc)
 		dev.Router.Enable()
 		dev.Router.SetTimestamp(packet.Metadata().Timestamp)
@@ -34,7 +34,7 @@ func parseMld(packet gopacket.Packet) {
 		done, _ := dlv1.(*layers.MLDv1MulticastListenerDoneMessage)
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
-		dev := devices.Get(linkSrc)
+		dev := devices.Add(linkSrc)
 		dev.UCasts.Add(netSrc)
 		dev.MCasts.Del(layers.NewIPEndpoint(done.MulticastAddress))
 		return
@@ -47,7 +47,7 @@ func parseMld(packet gopacket.Packet) {
 		report, _ := rlv1.(*layers.MLDv1MulticastListenerReportMessage)
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
-		dev := devices.Get(linkSrc)
+		dev := devices.Add(linkSrc)
 		dev.UCasts.Add(netSrc)
 		dev.MCasts.Add(layers.NewIPEndpoint(report.MulticastAddress))
 		return
@@ -60,7 +60,7 @@ func parseMld(packet gopacket.Packet) {
 		// queries are sent by routers, mark as router
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
-		dev := devices.Get(linkSrc)
+		dev := devices.Add(linkSrc)
 		dev.UCasts.Add(netSrc)
 		dev.Router.Enable()
 		dev.Router.SetTimestamp(packet.Metadata().Timestamp)
@@ -73,7 +73,7 @@ func parseMld(packet gopacket.Packet) {
 		report, _ := rlv2.(*layers.MLDv2MulticastListenerReportMessage)
 		linkSrc, _ := getMacs(packet)
 		netSrc, _ := getIps(packet)
-		dev := devices.Get(linkSrc)
+		dev := devices.Add(linkSrc)
 		dev.UCasts.Add(netSrc)
 
 		// parse multicast addresses and add/remove them
