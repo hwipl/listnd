@@ -2,6 +2,8 @@ package pkt
 
 import (
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/google/gopacket"
 
@@ -10,6 +12,7 @@ import (
 
 var (
 	debugMode bool
+	debugOut  io.Writer = os.Stdout
 	withPeers bool
 	devices   *dev.DeviceMap
 )
@@ -32,7 +35,7 @@ func SetDevices(devs *dev.DeviceMap) {
 // debug prints text if in debug mode
 func debug(text string) {
 	if debugMode {
-		fmt.Println(text)
+		fmt.Fprintln(debugOut, text)
 	}
 }
 
