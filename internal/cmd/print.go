@@ -16,13 +16,13 @@ func debug(text string) {
 // printConsole prints the device table periodically to the console
 func printConsole() {
 	for {
+		// wait 5 seconds before printing
+		time.Sleep(5 * time.Second)
+
 		// print devices
 		devices.Lock()
 		devices.Print(os.Stdout)
 		devices.Unlock()
-
-		// wait 5 seconds before printing
-		time.Sleep(5 * time.Second)
 	}
 
 }
