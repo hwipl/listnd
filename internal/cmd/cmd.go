@@ -12,10 +12,10 @@ import (
 
 var (
 	// pcap settings
-	pcapPromisc bool   = true
-	pcapDevice  string = "eth0"
-	pcapSnaplen int    = 1024
-	pcapTimeout int    = 1
+	pcapDevice  string
+	pcapPromisc bool = true
+	pcapSnaplen int  = 1024
+	pcapTimeout int  = 1
 	pcapHandle  *pcap.Handle
 	pcapErr     error
 
