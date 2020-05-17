@@ -13,6 +13,13 @@ func debug(text string) {
 	}
 }
 
+// printTable prints the device table
+func printTable() {
+	devices.Lock()
+	devices.Print(os.Stdout)
+	devices.Unlock()
+}
+
 // printConsole prints the device table periodically to the console
 func printConsole() {
 	for {
@@ -20,9 +27,7 @@ func printConsole() {
 		time.Sleep(5 * time.Second)
 
 		// print devices
-		devices.Lock()
-		devices.Print(os.Stdout)
-		devices.Unlock()
+		printTable()
 	}
 
 }
