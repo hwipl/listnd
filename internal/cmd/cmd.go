@@ -11,6 +11,7 @@ import (
 var (
 	// pcap settings
 	pcapDevice  string
+	pcapFile    string
 	pcapPromisc bool = true
 	pcapSnaplen int  = 1024
 	pcapTimeout int  = 1
@@ -31,6 +32,8 @@ func parseCommandLine() {
 	// define command line arguments
 	flag.StringVar(&pcapDevice, "i", pcapDevice,
 		"set the interface to listen on")
+	flag.StringVar(&pcapFile, "f", pcapFile,
+		"set the pcap file to read packets from")
 	flag.BoolVar(&pcapPromisc, "pcap-promisc", pcapPromisc,
 		"set pcap promiscuous parameter")
 	flag.IntVar(&pcapTimeout, "pcap-timeout", pcapTimeout,
@@ -69,4 +72,5 @@ func Run() {
 		go printConsole()
 	}
 	listen()
+	printTable()
 }
