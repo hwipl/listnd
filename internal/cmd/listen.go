@@ -11,6 +11,11 @@ import (
 	"github.com/hwipl/listnd/internal/pkt"
 )
 
+var (
+	pcapHandle *pcap.Handle
+	pcapErr    error
+)
+
 // getFirstPcapInterface sets the first network interface found by pcap
 func getFirstPcapInterface() {
 	ifs, err := pcap.FindAllDevs()

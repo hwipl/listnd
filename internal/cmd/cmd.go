@@ -4,8 +4,6 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/google/gopacket/pcap"
-
 	"github.com/hwipl/listnd/internal/dev"
 	"github.com/hwipl/listnd/internal/pkt"
 )
@@ -16,8 +14,6 @@ var (
 	pcapPromisc bool = true
 	pcapSnaplen int  = 1024
 	pcapTimeout int  = 1
-	pcapHandle  *pcap.Handle
-	pcapErr     error
 
 	// parsing/output settings
 	debugMode bool = false
