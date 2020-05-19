@@ -54,6 +54,35 @@ func TestDeviceMapGet(t *testing.T) {
 	}
 }
 
+func TestDeviceMapReset(t *testing.T) {
+	var d DeviceMap
+	var want, got int
+
+	// prepare mac
+	m, err := net.ParseMAC("00:00:5e:00:53:01")
+	if err != nil {
+		log.Fatal(err)
+	}
+	mac := layers.NewMACEndpoint(m)
+
+	// test empty
+	d.Reset()
+	want = 0
+	got = len(d.m)
+	if got != want {
+		t.Errorf("got = %d; want = %d", got, want)
+	}
+
+	// test filled
+	d.Add(mac)
+	d.Reset()
+	want = 0
+	got = len(d.m)
+	if got != want {
+		t.Errorf("got = %d; want = %d", got, want)
+	}
+}
+
 func TestDeviceMapPrint(t *testing.T) {
 	var d DeviceMap
 	var buf bytes.Buffer
