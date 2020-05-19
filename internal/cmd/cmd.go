@@ -66,10 +66,10 @@ func Run() {
 	pkt.SetPeers(withPeers)
 	if httpListen != "" {
 		// start http server and print device table to clients
-		go startHTTP()
+		startHTTP()
 	} else {
 		// print device table periodically to console
-		go printConsole()
+		printConsole()
 	}
 	listen()
 	printTable()

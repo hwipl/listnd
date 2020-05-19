@@ -22,12 +22,14 @@ func printTable() {
 
 // printConsole prints the device table periodically to the console
 func printConsole() {
-	for {
-		// wait 5 seconds before printing
-		time.Sleep(5 * time.Second)
+	go func() {
+		for {
+			// wait 5 seconds before printing
+			time.Sleep(5 * time.Second)
 
-		// print devices
-		printTable()
-	}
+			// print devices
+			printTable()
+		}
+	}()
 
 }

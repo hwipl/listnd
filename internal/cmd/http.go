@@ -17,5 +17,5 @@ func handleHTTP(w http.ResponseWriter, r *http.Request) {
 // startHTTP starts the http server
 func startHTTP() {
 	http.HandleFunc("/", handleHTTP)
-	http.ListenAndServe(httpListen, nil)
+	go http.ListenAndServe(httpListen, nil)
 }
