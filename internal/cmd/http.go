@@ -1,6 +1,14 @@
 package cmd
 
-import "net/http"
+import (
+	"log"
+	"net"
+	"net/http"
+)
+
+var (
+	httpListener net.Listener
+)
 
 // handleHTTP prints the device table to http clients
 func handleHTTP(w http.ResponseWriter, r *http.Request) {
@@ -16,6 +24,15 @@ func handleHTTP(w http.ResponseWriter, r *http.Request) {
 
 // startHTTP starts the http server
 func startHTTP() {
+	var err error
+
+	// create listener
+	httpListener, err = net.Listen("tcp", httpListen)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// start listening
 	http.HandleFunc("/", handleHTTP)
-	go http.ListenAndServe(httpListen, nil)
+	go http.Serve(httpListener, nil)
 }
