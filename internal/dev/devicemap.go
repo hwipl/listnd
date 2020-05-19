@@ -50,6 +50,11 @@ func (d *DeviceMap) Get(linkAddr gopacket.Endpoint) *DeviceInfo {
 	return d.m[linkAddr]
 }
 
+// Reset deletes all device information entries
+func (d *DeviceMap) Reset() {
+	d.m = nil
+}
+
 // Print prints all devices to w
 func (d *DeviceMap) Print(w io.Writer) {
 	devicesFmt := "===================================" +
