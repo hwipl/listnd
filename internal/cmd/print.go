@@ -25,7 +25,7 @@ func printConsole() {
 	go func() {
 		for {
 			// wait 5 seconds before printing
-			time.Sleep(5 * time.Second)
+			time.Sleep(time.Duration(interval) * time.Second)
 
 			// print devices
 			printTable()

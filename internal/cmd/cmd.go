@@ -17,6 +17,7 @@ var (
 	pcapTimeout int  = 1
 
 	// parsing/output settings
+	interval  int  = 5
 	debugMode bool = false
 	withPeers bool = false
 
@@ -44,6 +45,8 @@ func parseCommandLine() {
 	flag.BoolVar(&withPeers, "peers", withPeers, "show peers")
 	flag.StringVar(&httpListen, "http", httpListen,
 		"use http server and set the listen address (e.g.: :8000)")
+	flag.IntVar(&interval, "interval", interval,
+		"set output interval to `seconds`")
 
 	// parse and overwrite default values of settings
 	flag.Parse()
