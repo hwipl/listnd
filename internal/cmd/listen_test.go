@@ -23,7 +23,7 @@ func TestGetFirstPcapInterface(t *testing.T) {
 	}
 }
 
-func TestListenPcap(t *testing.T) {
+func testListenPcapCreateDumpFile() string {
 	// prepare creation of packet
 	opts := gopacket.SerializeOptions{
 		FixLengths:       true,
@@ -54,7 +54,7 @@ func TestListenPcap(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.Remove(tmpFile.Name())
+	defer tmpFile.Close()
 
 	// write packets of fake tcp connection to pcap file
 	w := pcapgo.NewWriter(tmpFile)
@@ -63,12 +63,18 @@ func TestListenPcap(t *testing.T) {
 		CaptureLength: len(packet),
 		Length:        len(packet),
 	}, packet)
-	tmpFile.Close()
+
+	return tmpFile.Name()
+}
+
+func TestListenPcap(t *testing.T) {
+	// create temporary pcap file
+	pcapFile = testListenPcapCreateDumpFile()
+	defer os.Remove(pcapFile)
 
 	// handle packet
 	devices = dev.DeviceMap{}
 	pkt.SetDevices(&devices)
-	pcapFile = tmpFile.Name()
 	listen()
 
 	// check results
