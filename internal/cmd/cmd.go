@@ -32,19 +32,19 @@ var (
 func parseCommandLine() {
 	// define command line arguments
 	flag.StringVar(&pcapDevice, "i", pcapDevice,
-		"set the interface to listen on")
+		"set the `interface` to listen on")
 	flag.StringVar(&pcapFile, "f", pcapFile,
-		"set the pcap file to read packets from")
+		"set the pcap `file` to read packets from")
 	flag.BoolVar(&pcapPromisc, "pcap-promisc", pcapPromisc,
 		"set pcap promiscuous parameter")
 	flag.IntVar(&pcapTimeout, "pcap-timeout", pcapTimeout,
-		"set pcap timeout parameter in seconds")
+		"set pcap timeout parameter to `seconds`")
 	flag.IntVar(&pcapSnaplen, "pcap-snaplen", pcapSnaplen,
-		"set pcap snapshot length parameter in bytes")
-	flag.BoolVar(&debugMode, "debug", debugMode, "debugging mode")
+		"set pcap snapshot length parameter to `bytes`")
+	flag.BoolVar(&debugMode, "debug", debugMode, "set debugging mode")
 	flag.BoolVar(&withPeers, "peers", withPeers, "show peers")
 	flag.StringVar(&httpListen, "http", httpListen,
-		"use http server and set the listen address (e.g.: :8000)")
+		"use http server and set the listen `address` (e.g.: :8000)")
 	flag.IntVar(&interval, "interval", interval,
 		"set output interval to `seconds`")
 
