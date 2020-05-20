@@ -36,17 +36,21 @@ Command line options of the `listnd` command:
 
 ```
   -debug
-        debugging mode
-  -http string
+        set debugging mode
+  -f file
+        set the pcap file to read packets from
+  -http address
         use http server and set the listen address (e.g.: :8000)
-  -i string
-        the interface to listen on (default "eth0")
+  -i interface
+        set the interface to listen on
+  -interval seconds
+        set output interval to seconds (default 5)
   -pcap-promisc
-        Set pcap promiscuous parameter (default true)
-  -pcap-snaplen int
-        Set pcap snapshot length parameter in bytes (default 1024)
-  -pcap-timeout int
-        Set pcap timeout parameter in seconds (default 1)
+        set pcap promiscuous parameter (default true)
+  -pcap-snaplen bytes
+        set pcap snapshot length parameter to bytes (default 1024)
+  -pcap-timeout seconds
+        set pcap timeout parameter to seconds (default 1)
   -peers
         show peers
 ```
