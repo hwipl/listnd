@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/google/gopacket/layers"
+	"github.com/hwipl/listnd/internal/dev"
 )
 
 func getHTTPBody(url string) string {
@@ -26,6 +27,7 @@ func getHTTPBody(url string) string {
 
 func TestHTTP(t *testing.T) {
 	var want, got, url string
+	devices = dev.DeviceMap{}
 
 	// start server on random port
 	httpListen = ":0"

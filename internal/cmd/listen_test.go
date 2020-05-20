@@ -11,6 +11,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcapgo"
+	"github.com/hwipl/listnd/internal/dev"
 	"github.com/hwipl/listnd/internal/pkt"
 )
 
@@ -65,6 +66,7 @@ func TestListenPcap(t *testing.T) {
 	tmpFile.Close()
 
 	// handle packet
+	devices = dev.DeviceMap{}
 	pkt.SetDevices(&devices)
 	pcapFile = tmpFile.Name()
 	listen()
