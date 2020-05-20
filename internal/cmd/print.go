@@ -2,14 +2,19 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"time"
+)
+
+var (
+	debugOut io.Writer = os.Stdout
 )
 
 // debug prints debug output if in debug mode
 func debug(text string) {
 	if debugMode {
-		fmt.Println(text)
+		fmt.Fprintln(debugOut, text)
 	}
 }
 
