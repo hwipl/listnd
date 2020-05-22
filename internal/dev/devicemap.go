@@ -3,6 +3,7 @@ package dev
 import (
 	"fmt"
 	"io"
+	"sort"
 	"sync"
 
 	"github.com/google/gopacket"
@@ -63,8 +64,19 @@ func (d *DeviceMap) Print(w io.Writer) {
 		"===================================" +
 		"===================================\n"
 	fmt.Fprintf(w, devicesFmt, len(d.m), d.Packets)
-	for _, device := range d.m {
-		device.Print(w)
+
+	// sort devices by mac address
+	var macs []gopacket.Endpoint
+	for i := range d.m {
+		macs = append(macs, i)
+	}
+	sort.Slice(macs, func(i, j int) bool {
+		return macs[i].LessThan(macs[j])
+	})
+
+	// print sorted devices
+	for _, mac := range macs {
+		d.m[mac].Print(w)
 		fmt.Fprintln(w)
 	}
 }
