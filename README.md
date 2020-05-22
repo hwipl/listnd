@@ -68,11 +68,6 @@ $ sudo ./listnd -i eth3
 ======================================================================
 Devices: 2                                       (pkts: 5246)
 ======================================================================
-MAC: 70:85:c2:ab:cd:ef                           (age: 1, pkts: 1929)
-  Unicast Addresses:
-    IP: 192.168.1.23                             (age: 1, pkts: 1842)
-    IP: fe80::7285:c2ff:feab:cdef                (age: 52, pkts: 5)
-
 MAC: 5c:49:79:fe:dc:ba                           (age: 1, pkts: 3317)
   Properties:
     Router: true                                 (age: 122)
@@ -87,4 +82,9 @@ MAC: 5c:49:79:fe:dc:ba                           (age: 1, pkts: 3317)
     IP: 224.0.0.2                                (age: -1, pkts: 0)
     IP: 239.255.255.250                          (age: -1, pkts: 0)
     IP: 224.0.0.252                              (age: -1, pkts: 0)
+
+MAC: 70:85:c2:ab:cd:ef                           (age: 1, pkts: 1929)
+  Unicast Addresses:
+    IP: 192.168.1.23                             (age: 1, pkts: 1842)
+    IP: fe80::7285:c2ff:feab:cdef                (age: 52, pkts: 5)
 ```
