@@ -52,10 +52,10 @@ func listen() {
 		startText = fmt.Sprintf("Reading packets from file %s:\n",
 			pcapFile)
 	}
-	defer pcapHandle.Close()
 	if pcapErr != nil {
 		log.Fatal(pcapErr)
 	}
+	defer pcapHandle.Close()
 
 	// Use the handle as a packet source to process all packets
 	packetSource := gopacket.NewPacketSource(pcapHandle,
