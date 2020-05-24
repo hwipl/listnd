@@ -45,6 +45,8 @@ Command line options of the `listnd` command:
         set the interface to listen on
   -interval seconds
         set output interval to seconds (default 5)
+  -pcap-filter filter
+        set pcap packet filtering to filter
   -pcap-promisc
         set pcap promiscuous parameter (default true)
   -pcap-snaplen bytes
