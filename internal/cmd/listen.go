@@ -57,6 +57,13 @@ func listen() {
 	}
 	defer pcapHandle.Close()
 
+	// add pcap/bpf filter
+	if pcapFilter != "" {
+		if err := pcapHandle.SetBPFFilter(pcapFilter); err != nil {
+			log.Fatal(pcapErr)
+		}
+	}
+
 	// Use the handle as a packet source to process all packets
 	packetSource := gopacket.NewPacketSource(pcapHandle,
 		pcapHandle.LinkType())

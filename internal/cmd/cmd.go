@@ -15,6 +15,7 @@ var (
 	pcapPromisc bool = true
 	pcapSnaplen int  = 1024
 	pcapTimeout int  = 1
+	pcapFilter  string
 
 	// parsing/output settings
 	interval  int  = 5
@@ -41,6 +42,8 @@ func parseCommandLine() {
 		"set pcap timeout parameter to `seconds`")
 	flag.IntVar(&pcapSnaplen, "pcap-snaplen", pcapSnaplen,
 		"set pcap snapshot length parameter to `bytes`")
+	flag.StringVar(&pcapFilter, "pcap-filter", pcapFilter,
+		"set pcap packet filtering to `filter`")
 	flag.BoolVar(&debugMode, "debug", debugMode, "set debugging mode")
 	flag.BoolVar(&withPeers, "peers", withPeers, "show peers")
 	flag.StringVar(&httpListen, "http", httpListen,
