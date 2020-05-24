@@ -93,3 +93,56 @@ func TestListenPcap(t *testing.T) {
 		t.Errorf("got = %s; want %s", got, want)
 	}
 }
+
+func TestListenPcapFilter(t *testing.T) {
+	var want, got string
+	var buf bytes.Buffer
+
+	// create temporary pcap file
+	pcapFile = testListenPcapCreateDumpFile()
+	defer os.Remove(pcapFile)
+
+	// handle packet with not matching filter
+	devices = dev.DeviceMap{}
+	pkt.SetDevices(&devices)
+	pcapFilter = "ether host 00:00:5e:00:53:02"
+	listen()
+
+	// check results
+	devices.Print(&buf)
+	want = "=================================================" +
+		"=====================\n" +
+		"Devices: 0                                       " +
+		"(pkts: 0)\n" +
+		"=================================================" +
+		"=====================\n"
+	got = buf.String()
+	if got != want {
+		t.Errorf("got = %s; want %s", got, want)
+	}
+
+	// handle packet with matching filter
+	devices = dev.DeviceMap{}
+	pkt.SetDevices(&devices)
+	pcapFilter = "ether host 00:00:5e:00:53:01"
+	listen()
+
+	// check results
+	buf.Reset()
+	devices.Print(&buf)
+	want = "=================================================" +
+		"=====================\n" +
+		"Devices: 1                                       " +
+		"(pkts: 1)\n" +
+		"=================================================" +
+		"=====================\n" +
+		"MAC: 00:00:5e:00:53:01                           " +
+		"(age: "
+	got = buf.String()[:len(want)] // ignore age and pkt count
+	if got != want {
+		t.Errorf("got = %s; want %s", got, want)
+	}
+
+	// reset filter
+	pcapFilter = ""
+}
