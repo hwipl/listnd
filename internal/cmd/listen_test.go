@@ -15,14 +15,6 @@ import (
 	"github.com/hwipl/listnd/internal/pkt"
 )
 
-func TestGetFirstPcapInterface(t *testing.T) {
-	pcapDevice = ""
-	getFirstPcapInterface()
-	if pcapDevice == "" {
-		t.Errorf("pcapDevice = \"\", want != \"\"")
-	}
-}
-
 func testListenPcapCreateDumpFile() string {
 	// prepare creation of packet
 	opts := gopacket.SerializeOptions{
