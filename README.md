@@ -7,8 +7,10 @@ packets on a network interface and analyses them.
 
 ## Installation
 
-You can download and install listnd with its dependencies to your GOPATH or
-GOBIN with the go tool:
+listnd requires libpcap to capture packets from network interfaces. So, make
+sure you have libpcap installed. You can then download and install listnd with
+its other dependencies to your GOPATH or GOBIN (usually `~/go/bin/`) with the
+go tool:
 
 ```console
 $ go get github.com/hwipl/listnd/cmd/listnd
