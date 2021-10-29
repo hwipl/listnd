@@ -41,7 +41,7 @@ func parseDhcp(packet gopacket.Packet) {
 		switch dhcp.MsgType {
 		case layers.DHCPv6MsgTypeSolicit:
 			debug("DHCPv6 Solicit")
-		case layers.DHCPv6MsgTypeAdverstise:
+		case layers.DHCPv6MsgTypeAdvertise:
 			debug("DHCPv6 Advertise")
 		case layers.DHCPv6MsgTypeRequest:
 			debug("DHCPv6 Request")
