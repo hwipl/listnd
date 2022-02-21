@@ -13,6 +13,7 @@ its other dependencies to your GOPATH or GOBIN (usually `~/go/bin/`) with the
 go tool:
 
 ```console
+$ sudo apt install libpcap-dev 
 $ go get github.com/hwipl/listnd/cmd/listnd
 ```
 
