@@ -14,8 +14,9 @@ sure you have libpcap installed. For example on a debian-based distribution:
 $ sudo apt install libpcap-dev
 ```
 
-After installing dependencies you can then download and install listnd with its 
-other dependencies to  your  GOPATH or GOBIN (usually `~/go/bin/`) with the go tool:
+After installing dependencies you can download, build and install listnd with
+its other dependencies to your GOPATH or GOBIN (usually `~/go/bin/`) with the
+go tool:
 
 ```console
 $ go get github.com/hwipl/listnd/cmd/listnd
