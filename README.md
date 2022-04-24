@@ -19,7 +19,7 @@ its other dependencies to your GOPATH or GOBIN (usually `~/go/bin/`) with the
 go tool:
 
 ```console
-$ go get github.com/hwipl/listnd/cmd/listnd
+$ go install github.com/hwipl/listnd/cmd/listnd
 ```
 
 ## Usage
