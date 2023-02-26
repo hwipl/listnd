@@ -3,8 +3,8 @@ package dev
 import (
 	"fmt"
 
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
+	"github.com/gopacket/gopacket"
+	"github.com/gopacket/gopacket/layers"
 )
 
 // AddrInfo stores an ip or mac address of a device on the network

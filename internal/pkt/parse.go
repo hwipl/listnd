@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/google/gopacket"
+	"github.com/gopacket/gopacket"
 
 	"github.com/hwipl/listnd/internal/dev"
 )

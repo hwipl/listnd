@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/google/gopacket/layers"
+	"github.com/gopacket/gopacket/layers"
 )
 
 // PrefixInfo stores a router's prefix information

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/google/gopacket"
+	"github.com/gopacket/gopacket"
 
 	"github.com/hwipl/listnd/internal/pkt"
 	"github.com/hwipl/packet-go/pkg/pcap"

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/google/gopacket/layers"
+	"github.com/gopacket/gopacket/layers"
 )
 
 // PrefixList stores router prefixes

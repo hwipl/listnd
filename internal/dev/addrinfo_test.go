@@ -5,7 +5,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/google/gopacket/layers"
+	"github.com/gopacket/gopacket/layers"
 )
 
 func TestAddrInfo(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/google/gopacket"
+	"github.com/gopacket/gopacket"
 )
 
 // DeviceInfo is a device found on the network

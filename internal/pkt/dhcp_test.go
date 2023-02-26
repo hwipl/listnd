@@ -6,8 +6,8 @@ import (
 	"net"
 	"testing"
 
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
+	"github.com/gopacket/gopacket"
+	"github.com/gopacket/gopacket/layers"
 	"github.com/hwipl/listnd/internal/dev"
 )
 
@@ -142,7 +142,7 @@ func TestParseDHCPv6(t *testing.T) {
 	// test packet parsing
 	ops := []layers.DHCPv6MsgType{
 		layers.DHCPv6MsgTypeSolicit,
-		layers.DHCPv6MsgTypeAdverstise,
+		layers.DHCPv6MsgTypeAdvertise,
 		layers.DHCPv6MsgTypeRequest,
 		layers.DHCPv6MsgTypeConfirm,
 		layers.DHCPv6MsgTypeRenew,

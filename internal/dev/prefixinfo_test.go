@@ -3,7 +3,7 @@ package dev
 import (
 	"testing"
 
-	"github.com/google/gopacket/layers"
+	"github.com/gopacket/gopacket/layers"
 )
 
 func TestPrefixInfo(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/google/gopacket"
+	"github.com/gopacket/gopacket"
 )
 
 // DeviceMap is the device table definition
