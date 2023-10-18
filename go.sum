@@ -1,7 +1,7 @@
-github.com/gopacket/gopacket v1.0.1-0.20230225095122-6457da64b08f h1:C8l7xfkd5dT3+SYTggOrprW30eDbBZzWXqCBvyyvpkI=
-github.com/gopacket/gopacket v1.0.1-0.20230225095122-6457da64b08f/go.mod h1:HavMeONEl7W9036of9LbSWoonqhH7HA1+ZRO+rMIvFs=
-github.com/hwipl/packet-go v0.0.0-20230226103641-5b033f860f66 h1:04cAjqvysiB/6r+KWasDHJ9iEnPh1h7N+lezNTy9FIE=
-github.com/hwipl/packet-go v0.0.0-20230226103641-5b033f860f66/go.mod h1:jNuJgA2Eb92WEC0uyqLzsfnCYSfk6Brq2yw+QXfsj8c=
+github.com/gopacket/gopacket v1.1.1 h1:zbx9F9d6A7sWNkFKrvMBZTfGgxFoY4NgUudFVVHMfcw=
+github.com/gopacket/gopacket v1.1.1/go.mod h1:HavMeONEl7W9036of9LbSWoonqhH7HA1+ZRO+rMIvFs=
+github.com/hwipl/packet-go v0.0.0-20231017084534-aeef2764812d h1:qvjhulSw3PX5APDJgegV7aC7WH9YbDyPaL3DEzbQqA4=
+github.com/hwipl/packet-go v0.0.0-20231017084534-aeef2764812d/go.mod h1:EsPEW3BhaKHxCywspZmiFcGtA0oPxltC2vquDLmXRfA=
 github.com/vishvananda/netlink v1.1.0 h1:1iyaYNBLmP6L0220aDnYQpo1QEV4t4hJ+xEEhhJH8j0=
 github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74 h1:gga7acRE695APm9hlsSMoOoE65U4/TcqNj90mc69Rlg=
 golang.org/x/net v0.17.0 h1:pVaXccu2ozPjCXewfr1S7xza/zcXTity9cCdXQYSjIM=
