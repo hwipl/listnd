@@ -1,6 +1,6 @@
 module github.com/hwipl/listnd
 
-go 1.22
+go 1.23.0
 
 require (
 	github.com/gopacket/gopacket v1.2.1-0.20240421060606-f0b345d69514
