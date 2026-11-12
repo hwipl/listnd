@@ -43,7 +43,7 @@ func (d *DeviceInfo) Print(w io.Writer) {
 		d.GENEVEs.Len() > 0 {
 
 		// start with header
-		fmt.Fprintf(w, propsHeader)
+		fmt.Fprint(w, propsHeader)
 
 		// print device properties
 		d.Bridge.Print(w)
